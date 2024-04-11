@@ -28,9 +28,16 @@
   color: #888;
 }
 
+body {
+  background-image: url('./assets/ducks.jpeg');
+  background-size: auto; 
+  background-repeat: repeat; 
+  background-position: center;
+
+}
 
 .homepage {
-  border: 2px solid #8B0000; 
+  border: 2px solid pink; 
   border-radius: 10px;
   display: flex;
   padding: 20px;
