@@ -1,5 +1,6 @@
 import { db } from "../config/firebase-config.js";
 import { collection, addDoc, serverTimestamp, doc, updateDoc, getDoc, query, where, getDocs } from "firebase/firestore";
+import { getCard } from "./cardsModule.js";
 
 const checkPlayer = async (playerId, roomId) => {
     try {
@@ -36,16 +37,142 @@ const endTurn = async (playerId, roomId) => {
         }
         const roomData = roomInfo.data();
         const turnOrder = roomData.turnOrder;
+        if (turnOrder[0] !== playerId) {
+            throw new Error("Not player's turn");
+        }
+        const playerHand = roomData.players[playerId].hand;
+        if (playerHand.length > 7) {
+            throw new Error("Player must discard cards before ending turn.");
+        }
+        if (roomData.players[playerId].drewCards === false) {
+            throw new Error("Player must draw cards before ending turn.");
+        }
         const nextPlayer = turnOrder.shift();
         turnOrder.push(nextPlayer);
         const actionsRemaining = 4;
-        // ! TO DO: Draw player cards and anything else that happens at the end of a turn
         await updateDoc(room, {
             turnOrder: turnOrder,
             [`players.${playerId}.actionsRemaining`]: actionsRemaining,
+            [`players.${playerId}.drewCards`]: false,
         });
     } catch (error) {
         throw new Error("Error Ending Turn: " + error.message);
+    }
+};
+
+const drawPlayerCards = async (playerId, roomId) => {
+    try {
+        const room = doc(db, "rooms", roomId);
+        const roomInfo = await getDoc(room);
+        if (!roomInfo.exists()) {
+            throw new Error("Room does not exist");
+        }
+        const roomData = roomInfo.data();
+        const playerDeck = roomData.playerDeck;
+        if (playerDeck.length < 2) {
+            throw new Error("Not enough cards in player deck");
+            // ! END GAME, THEY LOSE
+        }
+        if (roomData.players[playerId].drewCards === true) {
+            throw new Error("Player has already drawn cards this turn");
+        }
+        const newPlayerCards = playerDeck.splice(0, 2);
+        const playerCards = roomData.players[playerId].hand.concat(newPlayerCards);
+        await updateDoc(room, {
+            [`players.${playerId}.hand`]: playerCards,
+            playerDeck: playerDeck,
+            [`players.${playerId}.drewCards`]: true,
+        });
+    } catch (error) {
+        throw new Error("Error Drawing Player Cards: " + error.message);
+    }
+};
+
+const resolveEpidemic = async (playerId, roomId) => {
+    try {
+        const room = doc(db, "rooms", roomId);
+        const roomData = await checkPlayer(playerId, roomId);
+        let playerHand = roomData.players[playerId].hand;
+        if (!playerHand.includes("epidemic")) {
+            throw new Error("Player does not have an epidemic card to resolve");
+        }
+        let infectionDeck = roomData.infectionDeck;
+        let infectionDiscard = roomData.infectionDiscard;
+        const lastCard = infectionDeck.pop();
+        console.log(lastCard);
+        infectionDiscard.push(lastCard);
+        const card = await getCard("infection", lastCard);
+        console.log(card);
+        const location = card.location;
+        const color = card.color;
+        playerHand = playerHand.filter((card) => card !== "epidemic");
+        if (roomData.cureMarkers[color] === false) {
+            const locationObject = roomData.locations;
+            let locationDisease = locationObject[location].diseaseCubes[color];
+            if (locationDisease === 1) {
+                await Outbreak(location, color, locationObject);
+            } else {
+                locationDisease = 3;
+            }
+            console.log(locationDisease);
+            await updateDoc(room, {
+                infectionRate: roomData.infectionRate + 1,
+                [`locations.${location}.diseaseCubes.${color}`]: locationDisease,
+                infectionDeck: infectionDeck,
+                infectionDiscard: infectionDiscard,
+                [`players.${playerId}.hand`]: playerHand,
+            });
+        } else {
+            await updateDoc(room, {
+                infectionRate: roomData.infectionRate + 1,
+                [`players.${playerId}.hand`]: playerHand,
+            });
+        }
+    } catch (error) {
+        throw new Error("Error Resolving Epidemic: " + error.message);
+    }
+};
+
+const Outbreak = async (location, color, locationObject) => {
+    // ! TO DO
+    try {
+    } catch (error) {
+    }
+};
+
+const discardPlayerCards = async (playerId, roomId, cards) => {
+    try {
+        const room = doc(db, "rooms", roomId);
+        const roomInfo = await getDoc(room);
+        if (!roomInfo.exists()) {
+            throw new Error("Room does not exist");
+        }
+        const roomData = roomInfo.data();
+        const playerHand = roomData.players[playerId].hand;
+        if (cards.length > 2) {
+            throw new Error("Cannot discard more than 2 cards");
+        }
+        if (cards.length < 1) {
+            throw new Error("Must discard at least 1 card");
+        }
+        if (playerHand.some((card) => card === "epidemic")) {
+            throw new Error("Epidemic card(s) must be resolved before anything else.");
+        }
+        if (playerHand.length < 8) {
+            throw new Error("Player does not have enough cards to discard");
+        }
+        if (cards.some((card) => !playerHand.includes(card))) {
+            throw new Error("Player does not have one or more of the cards to discard");
+        }
+        console.log(playerHand);
+        console.log(cards);
+        const newHand = playerHand.filter((card) => !cards.includes(card));
+        console.log(newHand);
+        await updateDoc(room, {
+            [`players.${playerId}.hand`]: newHand,
+        });
+    } catch (error) {
+        throw new Error("Error Discarding Player Cards: " + error.message);
     }
 };
 
@@ -65,11 +192,11 @@ const drivePlayer = async (playerId, roomId, newLocation) => {
             [`players.${playerId}.actionsRemaining`]: actionsRemaining,
         });
         if (actionsRemaining < 1) {
-            await endTurn(playerId, roomId);
+            await drawPlayerCards(playerId, roomId);
         }
     } catch (error) {
         throw new Error("Error Driving Player: " + error.message);
     }
 };
 
-export { checkPlayer, endTurn, drivePlayer };
+export { checkPlayer, endTurn, drivePlayer, drawPlayerCards, discardPlayerCards, resolveEpidemic };

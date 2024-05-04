@@ -31,6 +31,7 @@ const createRoom = async (name, hiddenHands, epidemicCards) => {
                     role: null,
                     hand: [],
                     actionsRemaining: 4,
+                    drewCards: false,
                 },
             },
             gameStatus: "waiting",
@@ -105,6 +106,7 @@ const joinRoom = async (name, roomCode) => {
             role: null,
             hand: {},
             actionsRemaining: 4,
+            drewCards: false,
         };
         await updateDoc(room, {
             [`players.${userId}`]: playerData,
