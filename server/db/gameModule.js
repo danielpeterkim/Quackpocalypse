@@ -1,6 +1,6 @@
 import { db } from "../config/firebase-config.js";
 import { collection, addDoc, serverTimestamp, doc, updateDoc, getDoc, query, where, getDocs } from "firebase/firestore";
-import { getCard } from "./cardsModule.js";
+import { getCard, getLocationId } from "./cardsModule.js";
 
 const checkPlayer = async (playerId, roomId) => {
     try {
@@ -176,7 +176,20 @@ const discardPlayerCards = async (playerId, roomId, cards) => {
     }
 };
 
-const drivePlayer = async (playerId, roomId, newLocation) => {
+const takeAction = async(playerId, roomId, args) => {
+    if (args.action === "drive") {
+        return await actionDrive(playerId, roomId, args.location);
+    }
+    if (args.action === "direct flight") {
+        return await actionDirectFlight(playerId, roomId, args.index);
+    }
+    if (args.action === "shuttle flight") {
+        return await actionShuttleFlight(playerId, roomId, args.location);
+    }
+    throw new Error("Acion not found");
+}
+
+const actionDrive = async (playerId, roomId, newLocation) => {
     try {
         const room = doc(db, "rooms", roomId);
         const roomData = await checkPlayer(playerId, roomId);
@@ -191,12 +204,57 @@ const drivePlayer = async (playerId, roomId, newLocation) => {
             [`players.${playerId}.location`]: newLocation,
             [`players.${playerId}.actionsRemaining`]: actionsRemaining,
         });
-        if (actionsRemaining < 1) {
-            await drawPlayerCards(playerId, roomId);
-        }
     } catch (error) {
         throw new Error("Error Driving Player: " + error.message);
     }
 };
 
-export { checkPlayer, endTurn, drivePlayer, drawPlayerCards, discardPlayerCards, resolveEpidemic };
+const actionDirectFlight = async (playerId, roomId, cardIndex) => {
+    try {
+        const room = doc(db, "rooms", roomId);
+        const roomData = await checkPlayer(playerId, roomId);
+        const playerData = roomData.players[playerId];
+        const playerHand = playerData.hand;
+        const selectedCard = await getCard("player", playerHand[cardIndex]);
+        if (selectedCard.type !== "location") {
+            throw new Error("You can only fly to locations!");
+        }
+        const newLocation = selectedCard.location;
+        const newHand = playerHand.splice(cardIndex, 1);
+        let actionsRemaining = roomData.players[playerId].actionsRemaining - 1;
+        await updateDoc(room, {
+            [`players.${playerId}.location`]: newLocation,
+            [`players.${playerId}.actionsRemaining`]: actionsRemaining,
+            [`players.${playerId}.hand`]: playerHand
+        });
+    } catch (error) {
+        throw new Error("Error Flying Player: " + error.message);
+    }
+}
+
+const actionShuttleFlight = async (playerId, roomId, newLocation) => {
+    try {
+        const room = doc(db, "rooms", roomId);
+        const roomData = await checkPlayer(playerId, roomId);
+        const playerData = roomData.players[playerId];
+        const playerHand = playerData.hand;
+
+        const currentLocationId = await getLocationId(playerData.location);
+
+        if (!playerHand.includes(currentLocationId)) {
+            throw new Error("You do not have your own location card in hand!");
+        }
+        
+        const newHand = playerHand.splice(playerHand.indexOf(currentLocationId), 1);
+        let actionsRemaining = roomData.players[playerId].actionsRemaining - 1;
+        await updateDoc(room, {
+            [`players.${playerId}.location`]: newLocation,
+            [`players.${playerId}.actionsRemaining`]: actionsRemaining,
+            [`players.${playerId}.hand`]: playerHand
+        });
+    } catch (error) {
+        throw new Error("Error Flying Player: " + error.message);
+    }
+}
+
+export { checkPlayer, endTurn, takeAction, drawPlayerCards, discardPlayerCards, resolveEpidemic };

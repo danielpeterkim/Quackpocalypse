@@ -168,4 +168,13 @@ const getCard = async (deckType, cardId) => {
     }
 };
 
-export { createDecks, getDeck, getCard };
+const getLocationId = async(location) => {
+    for (const card of playerDeck) {
+        if (card.type === "location" && card.location === location) {
+            return card.id
+        }
+    }
+    throw new Error(`Location ${location} not found.`)
+}
+
+export { createDecks, getDeck, getCard, getLocationId };
