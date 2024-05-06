@@ -188,8 +188,9 @@ const takeAction = async(playerId, roomId, args) => {
     }
     if (playerData.actionsRemaining <= 0) throw new Error("Player is out of actions!");
     if (args.action === "drive") return await actionDrive(playerId, roomId, args.location);
-    if (args.action === "direct flight") return await actionDirectFlight(playerId, roomId, args.index);
-    if (args.action === "shuttle flight") return await actionShuttleFlight(playerId, roomId, args.location);
+    if (args.action === "directFlight") return await actionDirectFlight(playerId, roomId, args.index);
+    if (args.action === "charterFlight") return await actionCharterFlight(playerId, roomId, args.location);
+    if (args.action === "shuttleFlight") return await actionShuttleFlight(playerId, roomId, args.location);
     if (args.action === "build") return await actionBuildResearchStation(playerId, roomId);
     if (args.action === "treat") return await actionTreatDisease(playerId, roomId, args.color);
     if (args.action === "share") return await actionShareKnowledge(playerId, roomId, args.playerId, args.cardIndex);
@@ -241,7 +242,7 @@ const actionDirectFlight = async (playerId, roomId, cardIndex) => {
     }
 }
 
-const actionShuttleFlight = async (playerId, roomId, newLocation) => {
+const actionCharterFlight = async (playerId, roomId, newLocation) => {
     try {
         const room = doc(db, "rooms", roomId);
         const roomData = await checkPlayer(playerId, roomId);
@@ -264,6 +265,30 @@ const actionShuttleFlight = async (playerId, roomId, newLocation) => {
     } catch (error) {
         throw new Error("Error Flying Player: " + error.message);
     }
+}
+
+const actionShuttleFlight = async(playerId, roomId, newLocation) => {
+    try {
+        const room = doc(db, "rooms", roomId);
+        const roomData = await checkPlayer(playerId, roomId);
+        const playerData = roomData.players[playerId];
+        const playerLocationObject = roomData[playerData.location];
+        const newLocationObject = roomData[playerData.location];
+
+        if (newLocation === playerData.location) throw new Error("You are already there!");
+        if (!playerLocationObject.researchStation) throw new Error("There is no research station in your location!");
+        if (!newLocationObject.researchStation) throw new Error("There is no research station in that location!");
+
+        let actionsRemaining = roomData.players[playerId].actionsRemaining - 1;
+        await updateDoc(room, {
+            [`players.${playerId}.location`]: newLocation,
+            [`players.${playerId}.actionsRemaining`]: actionsRemaining
+        });
+        
+    } catch (error) {
+        throw new Error("Error Flying Player: " + error.message);
+    }
+    
 }
 
 const actionBuildResearchStation = async(playerId, roomId) => {
@@ -346,12 +371,12 @@ const actionShareKnowledge = async(playerId1, roomId, playerId2, cardIndex) => {
         const player1Location = playerData1.location;
         const player2Location = playerData2.location;
         if (player1Location !== shareLocation) {
-            throw new Error("You must be in the location matching the given card!")
+            throw new Error("You must be in the location matching the given card!");
         }
         if (player2Location !== shareLocation) {
-            throw new Error("The receiving player must be in the location matching the given card!")
+            throw new Error("The receiving player must be in the location matching the given card!");
         }
-        const newHand2 = player2Hand.push(player1Hand[cardIndex])
+        const newHand2 = player2Hand.push(player1Hand[cardIndex]);
         const newHand1 = player1Hand.splice(cardIndex, 1);
         
         let actionsRemaining = roomData.players[playerId1].actionsRemaining - 1;
@@ -438,4 +463,88 @@ const getDiseaseColors = async(playerId, roomId) => {
     }
 }
 
-export { checkPlayer, endTurn, takeAction, drawPlayerCards, discardPlayerCards, resolveEpidemic, getDiseaseColors };
+const getLegalActions = async(playerId, roomId, action) => {
+    let room;
+    let roomData;
+    let playerData;
+    let playerLocation;
+    let playerLocationId;
+    let playerLocationObject;
+    let playerPossibleCures;
+    let researchStationLocations;
+    try {
+        room = doc(db, "rooms", roomId);
+        roomData = await checkPlayer(playerId, roomId);
+        playerData = roomData.players[playerId];
+        playerLocation = playerData.location;
+        playerLocationId = await getLocationId(playerLocation)
+        playerLocationObject = roomData.locations[playerLocation];
+        playerPossibleCures = await getPossibleCures(roomId, playerId);
+        researchStationLocations = await getResearchStationLocations(roomId);
+    } catch (error) {
+        throw new Error("Error fetching room data: " + error.message);
+    }
+
+    if (playerData.actionsRemaining <= 0 || roomData.turnOrder[0] !== playerId) {
+        return {
+            "drive": false,
+            "directFlight": false,
+            "charterFlight": false,
+            "shuttleFlight": false,
+            "build": false,
+            "treat": false,
+            "share": false,
+            "cure": false
+        }
+    }
+    
+
+    return {
+        "drive": true,
+        "directFlight": playerData.hand.length > 0,
+        "charterFlight": playerData.hand.includes(playerLocationId),
+        "shuttleFlight": playerLocationObject.researchStation && researchStationLocations.length > 1,
+        "build": playerData.hand.includes(playerLocationId) && researchStationLocations.length < 6 && 
+            !(playerLocationObject.researchStation),
+        "treat": Object.values(playerLocationObject.diseaseCubes).some(x => x > 0),
+        "share": Object.keys(roomData.players).some(playerId2 =>
+                playerId !== playerId2 && roomData.players[playerId2].location === playerLocation &&
+                (playerData.hand.includes(playerLocationId) || roomData.players[playerId2].hand.includes(playerLocationId))),
+        "cure": playerPossibleCures.length > 0 && playerLocationObject.researchStation
+    }
+}
+
+const getResearchStationLocations = async(roomId) => {
+    try {
+        const room = doc(db, "rooms", roomId);
+        const roomInfo = await getDoc(room);
+        if (!roomInfo.exists()) {
+            throw new Error("Room does not exist");
+        }
+        const roomData = roomInfo.data();
+        return Object.keys(roomData.locations).filter(location => roomData.locations[location].researchStation);
+    } catch (error) {
+        throw new Error("Error fetching Research Station Locations: " + error.message);
+    }
+    
+}
+
+const getPossibleCures = async(roomId, playerId) => {
+    const room = doc(db, "rooms", roomId);
+    const roomData = await checkPlayer(playerId, roomId);
+    const playerData = roomData.players[playerId];
+    const playerHand = playerData.hand
+
+    const colors = {'black': 0, 'blue': 0, 'red': 0, 'yellow': 0}
+    for (const cardId of playerHand) {
+        const card = await getCard("player", cardId)
+        if (card.type === "location") {
+            colors[card.color] += 1
+        }
+    }
+
+    return Object.keys(colors).filter(color => colors[color] >= 5 && !roomData.cureMarkers[color]);
+}
+
+
+export { checkPlayer, endTurn, takeAction, drawPlayerCards, discardPlayerCards, resolveEpidemic, getDiseaseColors, getLegalActions };

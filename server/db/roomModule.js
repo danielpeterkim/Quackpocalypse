@@ -53,7 +53,7 @@ const createRoom = async (name, hiddenHands, epidemicCards) => {
             playerDeck: playerDeckInit,
             infectionDiscard: [],
             playerDiscard: [],
-            turnOrder: [],
+            turnOrder: []
         };
 
         const docRef = await addDoc(roomCollection, roomDoc);
