@@ -3,7 +3,6 @@ import { Routes, Route, Link } from 'react-router-dom';
 import Map from './Map';
 import Home from './Home';
 import Lobby from './Lobby';
-import './App.css';
 
 function App() {
   return (
