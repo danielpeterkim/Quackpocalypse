@@ -20,7 +20,8 @@ const createRoom = async (name, hiddenHands, epidemicCards) => {
         }
         let locations = locationsInit;
         const userId = uuidv4();
-        const docRef = await addDoc(roomCollection, {
+
+        const roomDoc = {
             roomCode: generateRoomCode(),
             roomCreator: userId,
             createdAt: serverTimestamp(),
@@ -31,6 +32,7 @@ const createRoom = async (name, hiddenHands, epidemicCards) => {
                     role: null,
                     hand: [],
                     actionsRemaining: 4,
+                    drewCards: false,
                 },
             },
             gameStatus: "waiting",
@@ -51,8 +53,10 @@ const createRoom = async (name, hiddenHands, epidemicCards) => {
             playerDeck: playerDeckInit,
             infectionDiscard: [],
             playerDiscard: [],
-            turnOrder: [],
-        });
+            turnOrder: []
+        };
+
+        const docRef = await addDoc(roomCollection, roomDoc);
         return docRef.id;
     } catch (error) {
         throw new Error("Error Creating Room: " + error.message);
@@ -105,6 +109,7 @@ const joinRoom = async (name, roomCode) => {
             role: null,
             hand: {},
             actionsRemaining: 4,
+            drewCards: false,
         };
         await updateDoc(room, {
             [`players.${userId}`]: playerData,
