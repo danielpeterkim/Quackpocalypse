@@ -69,7 +69,7 @@ function Home() {
     return (
         <div className="min-h-screen bg-gray-800 flex justify-center items-center">
             <div className="homepage border-2 border-red-800 rounded-lg p-20 bg-gray-800 text-white">
-                <h1 className='text-3xl text-pink'>Quackpocalypse</h1>
+                <h1 className='text-3xl text-pink text-center font-bold'>Quackpocalypse</h1>
                 <div className="options mt-20">
                     <button className="bg-red-800 hover:bg-red-600 text-white px-10 py-2 rounded-lg text-lg" onClick={handleCreate}>Create a Room</button>
                     {"  "}
@@ -78,9 +78,10 @@ function Home() {
                         <form>
                             <label>Name:</label>
                             <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
-                            {" "}
+                            {"  "}
                             <label>Code:</label>
                             <input type="text" value={roomCode} onChange={(e) => setRoomCode(e.target.value)} />
+                            {"  "}
                             <button type="button" className="bg-red-800 hover:bg-red-600 text-white px-10 py-2 rounded-lg text-lg" onClick={handleJoinRoom}>Join</button>
                         </form>
                     )}
@@ -88,17 +89,20 @@ function Home() {
                         <form> 
                             <label>Name:</label>
                             <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+                            {"  "}
                             <label>Hidden hands:</label>
                             <select value={hiddenHands} onChange={(e) => setHiddenHands(e.target.value)} className="bg-gray-800 text-white px-4 py-2 rounded-lg text-lg">
                                 <option value={false}>No</option>
                                 <option value={true}>Yes</option>
                             </select>
+                            {"  "}
                             <label>Epidemic cards:</label>
                             <select value={epidemicCards} onChange={(e) => setEpidemicCards(e.target.value)} className="bg-gray-800 text-white px-4 py-2 rounded-lg text-lg">
                                 <option value={4}>4</option>
                                 <option value={5}>5</option>
                                 <option value={6}>6</option>
                             </select>
+                            {"  "}
                             <button type="button" className="bg-red-800 hover:bg-red-600 text-white px-10 py-2 rounded-lg text-lg" onClick={handleCreateRoom}>Create</button>
                         </form>
                     )}
