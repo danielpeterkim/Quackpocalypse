@@ -10,7 +10,7 @@ function Lobby() {
     const { roomId } = useParams();
     let [error, setError] = useState(''); 
     const { name } = useParams();
-
+ 
     useEffect(() => {
         const handleGetRoomData = async () => {
             try {
@@ -27,10 +27,12 @@ function Lobby() {
                 if (response.ok) {
                     setRoomCode(data.roomCode);
                     setMembers(data.players);
-                    const matchingPlayer = Object.values(data.players).find(player => player.name === name);
-                    if (matchingPlayer) {
-                        setPlayerId(matchingPlayer.playerId);
-                    } 
+                    const plId = Object.keys(data.players).find(playerId => data.players[playerId].name === name);
+                    if (plId) {
+                        setPlayerId(plId);
+                    } else {
+                        throw new Error("Player ID not found for the given name");
+                    }
                 } else {
                     throw new Error(data.error);
                 }
@@ -48,7 +50,8 @@ function Lobby() {
 
         const startGame = async () => {
             try {
-                
+                console.log(playerId);
+                console.log(roomId);
                 const response = await fetch('http://localhost:3000/start-game', {
                     method: 'POST',
                     headers: {
@@ -58,9 +61,12 @@ function Lobby() {
                 });
                 const data = await response.json();
                 if (response.ok) {
-                    console.log('Room ID:', data.roomId);
-                    navigate(`/board/${name}/${data.roomId}`);
+                    console.log('Room ID:', roomId);
+                    console.log('Player Id starting:' + playerId);
+                    navigate(`/board/${name}/${roomId}`);
                 } else {
+                    console.log('Room ID:', data.roomId);
+                    console.log('Player Id starting:' + playerId);
                     throw new Error(data.error);
                 }
             } catch (error) {

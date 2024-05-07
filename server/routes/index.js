@@ -43,10 +43,9 @@ router.post('/start-game', async(req, res) => {
     const { playerId, roomId } = req.body;
     // console.log(name);
     // console.log(roomCode);
-    console.log(playerId);
-    console.log(roomId);
+    // console.log(playerId);
     const info = await startGame(playerId, roomId);
-    console.log(info)
+    // console.log(info)
     res.json(info);
   } catch (error) {
     res.status(400).json({ error: error.message });

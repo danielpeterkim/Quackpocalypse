@@ -188,6 +188,8 @@ const startGame = async (userId, roomId) => {
         }
         const roomData = roomInfo.data();
         if (roomData.roomCreator !== userId) {
+            // console.log('roomcreat:' + roomData.roomCreator);
+            // console.log('user(player) id' + userId);
             throw new Error("User is not the room host");
         }
         if (Object.keys(roomData.players).length < 2) {
