@@ -6,7 +6,7 @@ import { handleCrash, handleRejection } from "./services/crashHandler.js";
 dotenv.config();
 import { createRoom, joinRoom, findRoom, updateSettings, removePlayer, startGame, getRoomData} from "./db/roomModule.js";
 import { createDecks, getDeck, getCard } from "./db/cardsModule.js";
-import { takeAction, endTurn, drawPlayerCards, discardPlayerCards, resolveEpidemic, getDiseaseColors, getLegalActions, getRoomData } from "./db/gameModule.js";
+import { takeAction, endTurn, drawPlayerCards, discardPlayerCards, resolveEpidemic, getDiseaseColors, getLegalActions} from "./db/gameModule.js";
 // await createRoom("Dan", false, 5);
 // await joinRoom("Joe", "OJUWJG");
 // await startGame("4c9eb41b-a229-4412-bea1-710d51fbb892", "rXZWjcOUmzyRNAghJ5mE");
