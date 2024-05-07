@@ -30,9 +30,9 @@ router.post('/join-room', async (req, res) => {
 
 router.post('/room-data', async(req, res) => {
   try {
-    const {roomId} = req.body;
-    const { info } = await getRoomData(roomId);
-    return res.json({ info });
+    const { roomId } = req.body;
+    const info = await getRoomData(roomId);
+    res.json(info);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

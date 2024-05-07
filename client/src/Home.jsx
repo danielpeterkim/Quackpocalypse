@@ -42,7 +42,7 @@ function Home() {
         console.log(data.roomId);
         if (response.ok) {
             console.log('Room ID:', data.roomId); 
-            navigate(`/lobby`);
+            navigate(`/lobby/${data.roomId}`);
         } else {
             console.error('Failed to create room:', data.error); 
         }
@@ -60,7 +60,7 @@ function Home() {
         const data = await response.json();
         if (response.ok) {
             console.log('Room ID:', data.roomId);
-            navigate(`/lobby`);
+            navigate(`/lobby/${data.roomId}`);
         } else {
             console.error('Failed to join room:', data.error); 
         }

@@ -6,7 +6,7 @@ import { handleCrash, handleRejection } from "./services/crashHandler.js";
 dotenv.config();
 import { createRoom, joinRoom, findRoom, updateSettings, removePlayer, startGame } from "./db/roomModule.js";
 import { createDecks, getDeck, getCard } from "./db/cardsModule.js";
-import { takeAction, endTurn, drawPlayerCards, discardPlayerCards, resolveEpidemic, getDiseaseColors, getLegalActions } from "./db/gameModule.js";
+import { takeAction, endTurn, drawPlayerCards, discardPlayerCards, resolveEpidemic, getDiseaseColors, getLegalActions, getRoomData} from "./db/gameModule.js";
 // await createRoom("Dan", false, 5);
 // await joinRoom("Joe", "OJUWJG");
 // await startGame("4c9eb41b-a229-4412-bea1-710d51fbb892", "rXZWjcOUmzyRNAghJ5mE");
@@ -26,7 +26,7 @@ import { takeAction, endTurn, drawPlayerCards, discardPlayerCards, resolveEpidem
 // await takeAction("9cf6bcac-d782-4b5e-a8b5-a4369b82c039", "rXZWjcOUmzyRNAghJ5mE", {action: "cure", cardIndices: [0, 1, 2, 3, 5]});
 
 // console.log(await getLegalActions("9cf6bcac-d782-4b5e-a8b5-a4369b82c039", "rXZWjcOUmzyRNAghJ5mE"));
-
+console.log(await getRoomData('rXZWjcOUmzyRNAghJ5mE'));
 // await discardPlayerCards("b546741c-2256-45a4-9a25-5bce83c82336", "f9Gvb6TKAdcTCwtlYNiB", [36, 26]);
 // await resolveEpidemic("b546741c-2256-45a4-9a25-5bce83c82336", "f9Gvb6TKAdcTCwtlYNiB");
 // await updateSettings("16be9e12-e105-4baa-8a3f-fbe4b2c49811", "XEanZd3HYibLagkVuwC9", true, 6);
@@ -46,5 +46,5 @@ process.on("unhandledRejection", handleRejection);
 
 configRoutes(app);
 app.listen(3000, async () => {
-  console.log("We now have a server!");
+  console.log("We now have a server at http://localhost:3000/ !");
 });
