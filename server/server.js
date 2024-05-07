@@ -8,8 +8,8 @@ import { createRoom, joinRoom, findRoom, updateSettings, removePlayer, startGame
 import { createDecks, getDeck, getCard } from "./db/cardsModule.js";
 import { takeAction, endTurn, drawPlayerCards, discardPlayerCards, resolveEpidemic, getDiseaseColors, getLegalActions} from "./db/gameModule.js";
 // await createRoom("Dan", false, 5);
-// await joinRoom("Joe", "OJUWJG");
-// await startGame("4c9eb41b-a229-4412-bea1-710d51fbb892", "rXZWjcOUmzyRNAghJ5mE");
+// await joinRoom("Joe", "WMUFYX");
+// await startGame("655472ce-5d2e-43ce-a871-4b1b608747a8", "pOGGu8NPpiyIfIzIQigT");
 // await takeAction("4c9eb41b-a229-4412-bea1-710d51fbb892", "rXZWjcOUmzyRNAghJ5mE", {action: "drive", location: "Burchard"});
 // await takeAction("4c9eb41b-a229-4412-bea1-710d51fbb892", "rXZWjcOUmzyRNAghJ5mE", {action: "direct flight", index: 0})
 // await drawPlayerCards("4c9eb41b-a229-4412-bea1-710d51fbb892", "rXZWjcOUmzyRNAghJ5mE");

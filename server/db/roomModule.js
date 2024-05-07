@@ -30,6 +30,7 @@ const createRoom = async (name, hiddenHands, epidemicCards) => {
                     name: name,
                     location: "Babbio",
                     role: null,
+                    pawnColor: null,
                     hand: [],
                     actionsRemaining: 4,
                     drewCards: false,
@@ -206,6 +207,8 @@ const startGame = async (userId, roomId) => {
         // deal cards, randomly assign roles, and determine turn order
         const roles = ["Dispatcher", "Medic", "Scientist", "Researcher", "Operations Expert", "Contingency Planner"];
         shuffleArray(roles);
+        const pawnColors = ["red", "blue", "yellow", "brown", "black", "orange"];
+        shuffleArray(pawnColors);
         let cardsPerPlayer = 0;
         const playerCount = Object.keys(roomData.players).length;
         if (playerCount === 2) {
@@ -224,7 +227,9 @@ const startGame = async (userId, roomId) => {
             }
             turnOrder.push(player);
             let role = roles.pop();
+            let pawnColor = pawnColors.pop();
             updatePayload[`players.${player}.role`] = role;
+            updatePayload[`players.${player}.pawnColor`] = pawnColor;
             updatePayload[`players.${player}.hand`] = playerHand;
         }
         shuffleArray(turnOrder);
