@@ -284,4 +284,19 @@ const startGame = async (userId, roomId) => {
     }
 };
 
-export { createRoom, joinRoom, findRoom, updateSettings, removePlayer, startGame };
+
+const getRoomData = async(roomId) => {
+    try {
+        const room = doc(db, "rooms", roomId);
+        const roomInfo = await getDoc(room);
+        if (!roomInfo.exists()) {
+            throw new Error("Room does not exist");
+        }
+        const roomData = roomInfo.data();
+        return roomData;
+    } catch (error) {
+        throw new Error("Error fetching Room Details: " + error.message);
+    }
+}
+
+export { createRoom, joinRoom, findRoom, updateSettings, removePlayer, startGame, getRoomData};
