@@ -1,6 +1,7 @@
 import { db } from "../config/firebase-config.js";
 import { collection, addDoc, serverTimestamp, doc, updateDoc, getDoc, query, where, getDocs } from "firebase/firestore";
 import { getCard, getLocationId } from "./cardsModule.js";
+import { getRoomData } from "./roomModule.js";
 
 const checkPlayer = async (playerId, roomId) => {
     try {
@@ -546,20 +547,6 @@ const getPossibleCures = async(roomId, playerId) => {
     return Object.keys(colors).filter(color => colors[color] >= 5 && !roomData.cureMarkers[color]);
 }
 
-const getRoomData = async(roomId) => {
-    try {
-        const room = doc(db, "rooms", roomId);
-        const roomInfo = await getDoc(room);
-        if (!roomInfo.exists()) {
-            throw new Error("Room does not exist");
-        }
-        const roomData = roomInfo.data();
-        return roomData;
-    } catch (error) {
-        throw new Error("Error fetching Room Details: " + error.message);
-    }
-}
 
 
-
-export { checkPlayer, endTurn, takeAction, drawPlayerCards, discardPlayerCards, resolveEpidemic, getDiseaseColors, getLegalActions, getRoomData};
+export { checkPlayer, endTurn, takeAction, drawPlayerCards, discardPlayerCards, resolveEpidemic, getDiseaseColors, getLegalActions};

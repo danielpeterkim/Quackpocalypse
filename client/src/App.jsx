@@ -1,6 +1,5 @@
 import React from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
-import Map from './Map';
 import Home from './Home';
 import Board from './Board';
 import Lobby from './Lobby';
@@ -20,7 +19,6 @@ function App() {
         <Route path='/' element={<Home />} /> 
         <Route path='/lobby/:roomId' element = {<Lobby />} /> 
         <Route path='/board/' element = {<Board />} />
-        <Route path='/map' element={<Map />} />
       </Routes>
     </div>
   );
