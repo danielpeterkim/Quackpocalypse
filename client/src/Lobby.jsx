@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function Lobby() {
     const [name, setName] = useState('');
     const [roomCode, setRoomCode] = useState('');
+    let [showInfo, setShowInfo] = useState(false); 
     const [roomId, setRoomId] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const startGame = async () => {
@@ -20,7 +23,7 @@ function Lobby() {
                 if (response.ok) {
                     console.log('Room ID:', data.roomId);
                     setRoomId(data.roomId);
-                    // redirect to the map ? 
+                    navigate(`/board`);
                 } else {
                     console.error('Failed to start game:', data.error);
                 }
@@ -34,9 +37,13 @@ function Lobby() {
         }
     }, [name, roomCode]);
 
+    const handleInfo = () => {
+        setShowInfo(!showInfo);
+    }
+
     return (
-        <div>
-            <div className="lobby">
+        <div className="min-h-screen bg-gray-800 flex justify-center items-center">
+            <div className="lobby border-2 border-red-800 rounded-lg p-20 bg-gray-800 text-white">
                 <h1>Lobby</h1>
                 <div>
                     <h3> Code: {roomCode}</h3>
@@ -47,7 +54,15 @@ function Lobby() {
                         <p>Waiting for server response...</p>
                     )}
                 </div>
-                <button className="info-button">Info</button>
+                <div>
+                    {showInfo && (
+                        <div>
+                            <h4> Info: </h4>
+                            <p> Quackpocalypse is a cooperative, turn-based, online multiplayer game where 2-4 players work together in order to fight a life-threatening zombie plague: the fate of Stevens campus depends on your group of students to contain the horde and find a cure. In order to win, the students have to cure all 4 strains by collecting and sharing the corresponding-colored cards, while taking care not to let too many locations get out of control. </p>
+                        </div>
+                    )}
+                </div>
+                <button className="info-button absolute bottom-20 right-20" onClick={handleInfo}>Info</button>
             </div>
         </div>
     );
