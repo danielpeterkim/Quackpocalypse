@@ -464,9 +464,7 @@ const getDiseaseColors = async(playerId, roomId) => {
     }
 }
 
-const getLegalActions = async(playerId, roomId, action) => {
-    let room;
-    let roomData;
+const getLegalActions = async(roomData) => {
     let playerData;
     let playerLocation;
     let playerLocationId;
@@ -474,8 +472,6 @@ const getLegalActions = async(playerId, roomId, action) => {
     let playerPossibleCures;
     let researchStationLocations;
     try {
-        room = doc(db, "rooms", roomId);
-        roomData = await checkPlayer(playerId, roomId);
         playerData = roomData.players[playerId];
         playerLocation = playerData.location;
         playerLocationId = await getLocationId(playerLocation)
@@ -550,3 +546,4 @@ const getPossibleCures = async(roomId, playerId) => {
 
 
 export { checkPlayer, endTurn, takeAction, drawPlayerCards, discardPlayerCards, resolveEpidemic, getDiseaseColors, getLegalActions};
+

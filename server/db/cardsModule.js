@@ -111,13 +111,13 @@ const playerDeck = [
     { id: 53, type: "event", name: "Forecast" },
 ];
 
-const createDecks = () => {
+const createDecks = async () => {
     try {
-        const infectionDeckRef = addDoc(cardCollection, {
+        const infectionDeckRef = await addDoc(cardCollection, {
             deckType: "infection",
             cards: infectionDeck,
         });
-        const playerDeckRef = addDoc(cardCollection, {
+        const playerDeckRef = await addDoc(cardCollection, {
             deckType: "player",
             cards: playerDeck,
         });

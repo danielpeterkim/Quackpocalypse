@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import { useParams } from 'react-router-dom';
 import Area from './Area';
+import './index.css'
 // import Chat from './Chat';
 
 const Board = () => {
@@ -37,23 +38,23 @@ const Board = () => {
         }
     }, []);
 
-    const handleGetRoomData = async () => {
-        const response = await fetch('http://localhost:3000/room-data', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body:JSON.stringify('rXZWjcOUmzyRNAghJ5mE')
-        });
-        const data = await response.json();
-        console.log(data);
-        if (response.ok) {
-            console.log(data); 
-            // navigate(`/lobby/${name}/${data.roomId}`);
-        } else {
-            console.error('Failed to create room:', data.error); 
-        }
-    };
+    // const handleGetRoomData = async () => {
+    //     const response = await fetch('http://localhost:3000/room-data', {
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/json'
+    //         },
+    //         body:JSON.stringify('rXZWjcOUmzyRNAghJ5mE')
+    //     });
+    //     const data = await response.json();
+    //     console.log(data);
+    //     if (response.ok) {
+    //         console.log(data); 
+    //         // navigate(`/lobby/${name}/${data.roomId}`);
+    //     } else {
+    //         console.error('Failed to create room:', data.error); 
+    //     }
+    // };
 
     const [showChat, setShowChat] = useState(false);
 
@@ -66,7 +67,7 @@ const Board = () => {
     };
 
     if (loading) {
-      return <></>
+      return <h1>Loading...</h1>
     }
 
     const areas = [
@@ -119,14 +120,23 @@ const Board = () => {
       { name: 'Skate Park', x: 650, y: 380, color: 'red' },
       { name: 'Castle Point Lot', x: 670, y: 260, color: 'red' }
     ];
-    
+
+    const startAction = (e) => {  
+      const target = e.target;
+
+      target.style = 3;
+    }
+  
+    // const handleActionClick = (btn, actionName) => {
+    //   alert(`Clicked on ${actionName}`);
+    // }
 
     return (
       // Using Tailwind classes to control maximum size and responsiveness
       <div className="min-h-screen bg-gray-800 flex justify-center items-center">
       <div className="w-full h-full max-w-4xl max-h-3xl mx-auto">
       <svg className="w-full h-full" viewBox="0 0 800 600">
-            <image href={('/0.png')} width="800" height="600" />
+            <image href={('/0.png')} width="800" height="600"/>
             {areas.map(area => (
               <Area
                 key={area.name}
@@ -141,6 +151,37 @@ const Board = () => {
               />
             ))}
           </svg>
+
+      
+          
+
+      <div className="inline-flex rounded-md shadow-sm" role="group">
+        <button type="button" className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          Walk
+        </button>
+        <button type="button" className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          Direct Shuttle
+        </button>
+        <button type="button" className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          Charter Shuttle
+        </button>
+        <button type="button" className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          Standard Shuttle
+        </button>
+        <button type="button" className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          Build Research Camp
+        </button>
+        <button type="button" className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          Treat
+        </button>
+        <button type="button" className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          Share Knowledge
+        </button>
+        <button type="button" className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          Discover a Cure
+        </button>
+      </div>
+
           {/* <button
             onClick={handleToggleChat}
             className="absolute bottom-4 right-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
