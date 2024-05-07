@@ -4,6 +4,7 @@ import Area from './Area';
 
 const Board = () => {
   const [showChat, setShowChat] = useState(false);
+  const [ roomId ] = useParams();
   // const handleToggleChat = () => {
   //   setShowChat(!showChat);
   // }
@@ -81,6 +82,7 @@ const Board = () => {
               color={area.color}
               onClick={handleAreaClick}
               name={area.name}
+              roomId = {roomId}
             />
           ))}
         </svg>
