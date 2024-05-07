@@ -1,6 +1,6 @@
 import express from 'express';
 import { createRoom, joinRoom, findRoom } from "../db/roomModule.js";
-import { getRoomData } from "../db/gameModule.js";
+import { getRoomData } from "../db/roomModule.js";
 
 const router = express.Router();
 
