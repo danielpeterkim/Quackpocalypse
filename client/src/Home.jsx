@@ -9,6 +9,7 @@ function Home() {
     let [roomCode, setRoomCode] = useState('');
     let [hiddenHands, setHiddenHands] = useState(false);
     let [epidemicCards, setEpidemicCards] = useState(4);
+    let [error, setError] = useState(''); 
     const navigate = useNavigate();
 
     const handleJoin = () => {
@@ -30,39 +31,50 @@ function Home() {
     }
 
     const handleCreateRoom = async () => {
-        const response = await fetch('http://localhost:3000/create-room', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ name, hiddenHands, epidemicCards })
-        });
+        try{ 
+            const response = await fetch('http://localhost:3000/create-room', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, hiddenHands, epidemicCards })
+            });
 
-        const data = await response.json();
-        console.log(data.roomId);
-        if (response.ok) {
-            console.log('Room ID:', data.roomId); 
-            navigate(`/lobby/${name}/${data.roomId}`);
-        } else {
-            console.error('Failed to create room:', data.error); 
+           
+            const data = await response.json();
+            console.log(data.roomId);
+            if (response.ok) {
+                console.log('Room ID:', data.roomId); 
+                navigate(`/lobby/${name}/${data.roomId}`);
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (error){
+            console.error('Failed to create room', error.message);
+            setError(error.message);
         }
     };
 
     const handleJoinRoom = async () => {
-        const response = await fetch('http://localhost:3000/join-room', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ name, roomCode })
-        });
+        try{ 
+            const response = await fetch('http://localhost:3000/join-room', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, roomCode })
+            });
 
-        const data = await response.json();
-        if (response.ok) {
-            console.log('Room ID:', data.roomId);
-            navigate(`/lobby/${name}/${data.roomId}`);
-        } else {
-            console.error('Failed to join room:', data.error); 
+            const data = await response.json();
+            if (response.ok) {
+                console.log('Room ID:', data.roomId);
+                navigate(`/lobby/${name}/${data.roomId}`);
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (error){
+            console.error('Failed to join room', error.message);
+            setError(error.message);
         }
     };
 
@@ -70,6 +82,7 @@ function Home() {
         <div className="min-h-screen bg-gray-800 flex justify-center items-center">
             <div className="homepage border-2 border-red-800 rounded-lg p-20 bg-gray-800 text-white">
                 <h1 className='text-3xl text-pink text-center font-bold'>Quackpocalypse</h1>
+                <div> {error && <p className="text-red-600">{error}</p>} </div>
                 <div className="options mt-20">
                     <button className="bg-red-800 hover:bg-red-600 text-white px-10 py-2 rounded-lg text-lg" onClick={handleCreate}>Create a Room</button>
                     {"  "}

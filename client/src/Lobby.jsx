@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 function Lobby() {
-    const [name, setName] = useState('');
     const [roomCode, setRoomCode] = useState('');
     const [showInfo, setShowInfo] = useState(false);
+    const [members, setMembers] = useState([]);
+    const [playerId, setPlayerId] = useState('');
     const navigate = useNavigate();
     const { roomId } = useParams();
+    let [error, setError] = useState(''); 
+    const { name } = useParams();
 
     useEffect(() => {
         const handleGetRoomData = async () => {
@@ -23,11 +26,17 @@ function Lobby() {
                 console.log(data);
                 if (response.ok) {
                     setRoomCode(data.roomCode);
+                    setMembers(data.players);
+                    const matchingPlayer = Object.values(data.players).find(player => player.name === name);
+                    if (matchingPlayer) {
+                        setPlayerId(matchingPlayer.playerId);
+                    } 
                 } else {
-                    console.error('Failed to get room data:', data.error);
+                    throw new Error(data.error);
                 }
             } catch (error) {
                 console.error('Error getting room data:', error.message);
+                setError(error.message);
             }
         };
 
@@ -36,33 +45,29 @@ function Lobby() {
         }
     }, []);
 
-    useEffect(() => {
+
         const startGame = async () => {
             try {
+                
                 const response = await fetch('http://localhost:3000/start-game', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ name, roomCode })
+                    body: JSON.stringify({ playerId: playerId, roomId: roomId })
                 });
-
                 const data = await response.json();
                 if (response.ok) {
                     console.log('Room ID:', data.roomId);
-                    navigate(`/board/${data.roomId}`);
+                    navigate(`/board/${name}/${data.roomId}`);
                 } else {
-                    console.error('Failed to start game:', data.error);
+                    throw new Error(data.error);
                 }
             } catch (error) {
                 console.error('Error starting game:', error.message);
+                setError(error.message);
             }
         };
-
-        if (name !== '' && roomCode !== '') {
-            startGame();
-        }
-    }, [name, roomCode, navigate]);
 
     const handleInfo = () => {
         setShowInfo(!showInfo);
@@ -71,12 +76,19 @@ function Lobby() {
     return (
         <div className="min-h-screen bg-gray-800 flex justify-center items-center">
             <div className="lobby border-2 border-red-800 rounded-lg p-20 bg-gray-800 text-white">
-                <h1>Lobby</h1>
+                <h1 className='text-3xl text-pink text-center font-bold'>Lobby</h1>
+                {error && <p className="text-red-600">{error}</p>}
                 <div>
                     <h3>Code: {roomCode}</h3>
                     <h5>Members: </h5>
+                    <ul>
+                        {Object.keys(members).map(playerId => (
+                            <li key={playerId}>{members[playerId].name}</li>
+                        ))}
+                    </ul>
+                    
                     {roomId ? (
-                        <button onClick={() => console.log('Game Started!')}>Start Game</button>
+                        <button className="bg-red-800 hover:bg-red-600 text-white px-10 py-2 rounded-lg text-lg" onClick={startGame}>Start Game</button>
                     ) : (
                         <p>Waiting for server response...</p>
                     )}
