@@ -1,6 +1,7 @@
 import express from 'express';
 import { createRoom, joinRoom, findRoom, startGame } from "../db/roomModule.js";
 import { getRoomData } from "../db/roomModule.js";
+import { takeAction } from '../db/gameModule.js';
 
 const router = express.Router();
 
@@ -48,6 +49,15 @@ router.post('/start-game', async(req, res) => {
     // console.log(info)
     res.json(info);
   } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+})
+
+router.post('/take-action', async(req,res) => {
+  try{
+    const {playerId, roomId, args} = req.body;
+    await takeAction(playerId, roomId, args);
+  } catch (error){ 
     res.status(400).json({ error: error.message });
   }
 })

@@ -9,6 +9,7 @@ const Board = () => {
     const [loading, setLoading] = useState(true);
 
     const { roomId } = useParams();
+    const { name } = useParams();
       
     useEffect(() => {
         const handleGetRoomData = async () => {
@@ -38,6 +39,35 @@ const Board = () => {
         }
     }, []);
 
+    const getPlayerId = (players) => {
+      const matchingPlayer = Object.values(players).find(player => player.name === name);
+      return matchingPlayer ? matchingPlayer.playerId : undefined;
+    };
+
+    const takeAction = async (args) => {
+      try {
+          const playerId = getPlayerId(roomData.players);
+          if (!playerId) {
+              console.error('Player ID not found');
+              return;
+          }
+          const response = await fetch('http://localhost:3000/take-action', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ playerId: playerId, roomId: roomId, args: args })
+          });
+          const data = await response.json();
+          if (response.ok) {
+              console.log('Action successfully completed');
+          } else {
+              console.error('Error:', data.error);
+          }
+      } catch (error) {
+          console.error('Error:', error.message);
+      }
+  };
     // const handleGetRoomData = async () => {
     //     const response = await fetch('http://localhost:3000/room-data', {
     //         method: 'POST',
@@ -63,6 +93,7 @@ const Board = () => {
     // }
     const handleAreaClick = (areaName) => {
         // move pawn to that area 
+        setLocation(areaName);
         alert(`Clicked on: ${areaName}`);
     };
 
@@ -156,28 +187,28 @@ const Board = () => {
           
 
       <div className="inline-flex rounded-md shadow-sm" role="group">
-        <button type="button" className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        <button onClick={() => takeAction({ action: "drive", location: location })}  className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           Walk
         </button>
-        <button type="button" className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        <button onClick={() => takeAction({ action: "directFlight", index: 0 })}  className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           Direct Shuttle
         </button>
-        <button type="button" className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        <button onClick={() => takeAction({ action: "charterFlight", index: 0 })}  className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           Charter Shuttle
         </button>
-        <button type="button" className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        <button onClick={() => takeAction({ action: "shuttleFlight", location: location })} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           Standard Shuttle
         </button>
-        <button type="button" className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        <button onClick={() => takeAction({ action: "build" })}  className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           Build Research Camp
         </button>
-        <button type="button" className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        <button onClick={() => takeAction({ action: "treat", color: "blue" })} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           Treat
         </button>
-        <button type="button" className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        <button onClick={() => takeAction({ action: "share", playerId: getPlayerId(roomData.players), cardIndex: 0 })}className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           Share Knowledge
         </button>
-        <button type="button" className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        <button onClick={() => takeAction({ action: "cure", cardIndices: [0, 1, 2, 3, 5] })} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           Discover a Cure
         </button>
       </div>
