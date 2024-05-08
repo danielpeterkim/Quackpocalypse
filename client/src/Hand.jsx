@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import './index.css'; 
 let token = localStorage.getItem('token');
 
-const Hand = ({ roomId, playerName, onClick, selectedCardId}) => {
+const Hand = ({ roomId, playerName, onClick, selectedCardId, selectedLocation}) => {
     const [roomData, setRoomData] = useState({});
     const [playerHand, setPlayerHand] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -82,7 +82,14 @@ const Hand = ({ roomId, playerName, onClick, selectedCardId}) => {
     const renderCard = (card) => {
         const imagePath = `/Cards/${card.color}/${card.location}.png`;
         const isSelected = selectedCard && selectedCard.id === card.id;
-        const cardStyle = isSelected ? { transform: 'scale(1.4)', boxShadow: '0 0 10px gold', border: '2px solid gold' } : {};
+        let cardStyle;
+        if (isSelected) {
+          cardStyle = { transform: 'scale(1.4)', boxShadow: '0 0 10px gold', border: '2px solid gold' };
+        } else if (card.location === selectedLocation) {
+          cardStyle = { boxShadow: '0 0 10px green', border: '2px green' };
+        } else {
+          cardStyle = {};
+        }
         return (
           <div key={card.id} className={`card ${isSelected ? 'selected' : ''}`} onClick={() => onClick(card)} style={cardStyle}>
               <img src={imagePath} alt={card.location} />

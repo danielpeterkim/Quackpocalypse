@@ -318,7 +318,11 @@ const discardCard = async () => {
 
     const handleAreaClick = (areaName) => {
         // move pawn to that area
-        setLocation(areaName);
+        if (location === areaName) {
+          setLocation("")
+        } else {
+          setLocation(areaName);
+        }
     };
 
     const handleCubeClick = (cube) => {
@@ -326,7 +330,12 @@ const discardCard = async () => {
     };
 
     const handleCardClick = (card) => {
+      if (selectedCard === card) {
+        setSelectedCard(null);
+      } else {
         setSelectedCard(card);
+      }
+        
     };
 
     if (loading) {
@@ -391,7 +400,12 @@ const discardCard = async () => {
     };
 
     const showHand = (playerName) => {
-        return <Hand roomId={roomId} playerName={playerName} onClick={handleCardClick} />;
+        return <Hand 
+        roomId={roomId} 
+        playerName={playerName} 
+        onClick={handleCardClick} 
+        selectedLocation = {location}
+        />;
     };
 
     const handlePlayerHandClick = (playerName) => {
@@ -470,7 +484,7 @@ const discardCard = async () => {
 
                     <button onClick={discardCard} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Discard</button>
 
-                    <Hand roomId={roomId} playerName={name} onClick={handleCardClick} selectedCardId={selectedCard}/>
+                    <Hand roomId={roomId} playerName={name} onClick={handleCardClick} selectedCardId={selectedCard} selectedLocation={location}/>
                     <PlayerDeck roomId={roomId} playerId={getPlayerId(roomData.players)}/>
 
       {selectedPlayer && (
