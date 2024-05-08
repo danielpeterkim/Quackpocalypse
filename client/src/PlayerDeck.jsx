@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './index.css';
+let token = localStorage.getItem('token');
 
 const PlayerDeck = ({ playerId, roomId }) => {
     const [loading, setLoading] = useState(false);
