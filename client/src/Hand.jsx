@@ -6,39 +6,41 @@ const Hand = ({ roomId, playerName, onClick}) => {
     const [roomData, setRoomData] = useState({});
     const [playerHand, setPlayerHand] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [ selectedCard, setSelectedCard ] = useState(null);
+    const [selectedCard, setSelectedCard] = useState(null);
     let refreshInterval = 5000;
+
     useEffect(() => {
       const fetchRoomData = async () => {
-          setLoading(true);
           try {
               const response = await fetch('http://localhost:3000/room-data', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ roomId })
-            });
+              });
 
               if (response.ok) {
                 const data = await response.json();
                 setRoomData(data);
-                const hand = await fetchPlayerHand(data.players); 
-                setPlayerHand(hand); 
-                setLoading(false);
+                const newHand = await fetchPlayerHand(data.players);
+                if (JSON.stringify(newHand) !== JSON.stringify(playerHand)) { 
+                    setPlayerHand(newHand);
+                }
               } else {
                 throw new Error('Failed to fetch room data');
-            }
+              }
           } catch (error) {
               console.error('Error fetching room data:', error);
-              setLoading(false);
+          } finally {
+              setLoading(false); 
           }
-        }
+      };
 
-        if (roomId) {
-          fetchRoomData();
-          const intervalId = setInterval(fetchRoomData, refreshInterval);
-          return () => clearInterval(intervalId); //cleans up and prvents memory leaks
+      if (roomId) {
+        fetchRoomData();
+        const intervalId = setInterval(fetchRoomData, refreshInterval);
+        return () => clearInterval(intervalId); //cleans up and prevents memory leaks
       }
-    }, [roomId])
+    }, [roomId, playerHand]); 
 
     const fetchCardDetails = async (cardId) => {
         try {
@@ -52,7 +54,7 @@ const Hand = ({ roomId, playerName, onClick}) => {
           console.error('Error fetching card data:', error);
           return null; 
         }
-    }
+    };
     
     const fetchPlayerHand = async (players) => {
         if (!players) return [];
@@ -61,7 +63,7 @@ const Hand = ({ roomId, playerName, onClick}) => {
         
         const detailedHand = await Promise.all(player.hand.map(fetchCardDetails));
         return detailedHand.filter(card => card !== null);
-    }
+    };
 
     const renderCard = (card) => {
         const imagePath = `/Cards/${card.color}/${card.location}.png`;
@@ -73,22 +75,14 @@ const Hand = ({ roomId, playerName, onClick}) => {
           >
               <img src={imagePath} alt={card.location} />
           </div>
-      )
-    }
-
-    if (loading) {
-        return <h1>Loading...</h1>;
-    }
+      );
+    };
 
     return (
         <div className="flex justify-center items-center gap-4">
-            {playerHand.length > 0 ? (
-                playerHand.map(renderCard)
-            ) : (
-                <p>No cards in hand.</p>
-            )}
+            {loading ? <p>Loading...</p> : playerHand.length > 0 ? playerHand.map(renderCard) : <p>No cards in hand.</p>}
         </div>
-    )
-}
+    );
+};
 
 export default Hand;
