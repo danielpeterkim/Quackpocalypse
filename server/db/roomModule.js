@@ -317,6 +317,7 @@ const getRoomData = async(roomId) => {
         const roomData = roomInfo.data();
         return roomData;
     } catch (error) {
+        console.log(error);
         throw new Error(error.message);
     }
 }
