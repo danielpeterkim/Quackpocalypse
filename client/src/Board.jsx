@@ -15,6 +15,7 @@ const Board = () => {
     const [color, setColor] = useState("");
     const [error, setError] = useState("");
     const [showChat, setShowChat] = useState(false);
+    const [showChatButton, setShowChatButton] = useState(true);
     const [socket, setSocket] = useState(null);
     const [Messages, setMessages] = useState([]);
     const [localConnection, setLocalConnection] = useState(null);
@@ -83,9 +84,10 @@ const Board = () => {
             }
         } else {
             if (inputMessage.trim() === "") {
-                console.log("Message cannot be empty");
+                setError("Chat message cannot be empty.");
+            } else {
+                setError("Error sending message. Reload the page and try again.");
             }
-            console.error("Data channel is not open");
         }
     };
 
@@ -146,6 +148,14 @@ const Board = () => {
             };
         }
     }, [socket, localConnection, roomId]);
+
+    useEffect(() => {
+        if (roomData.players && Object.keys(roomData.players).length > 2) {
+            setShowChatButton(false);
+        } else {
+            setShowChatButton(true);
+        }
+    }, [roomData.players]);
 
     useEffect(() => {
         const handleGetRoomData = async () => {
@@ -263,8 +273,14 @@ const Board = () => {
     };
 
     const handleToggleChat = () => {
-        setShowChat(!showChat);
+        if (roomData.players && Object.keys(roomData.players).length > 2) {
+            setError("Chat is disabled for games of more than 2 players.");
+            setShowChat(false);
+        } else {
+            setShowChat(!showChat);
+        }
     };
+
     const handleAreaClick = (areaName) => {
         // move pawn to that area
         setLocation(areaName);
@@ -410,23 +426,42 @@ const Board = () => {
                     <Hand roomId={roomId} playerName={name} onClick={handleCardClick} />
                     <PlayerDeck roomId={roomId} playerId={getPlayerId(roomData.players)} />
                 </div>
+                {showChatButton && (
+                    <button
+                        onClick={handleToggleChat}
+                        className={`absolute bottom-4 right-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${
+                            roomData.players && roomData.players.length > 2 ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
+                        disabled={roomData.players && roomData.players.length > 2}
+                    >
+                        Open Chat
+                    </button>
+                )}
 
-                <button onClick={handleToggleChat} className="absolute bottom-4 right-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Open Chat
-                </button>
                 {showChat && (
-                    <div className="absolute bottom-12 right-4 bg-white p-4 rounded-lg shadow-lg">
-                        <h2>Chat - Room: {roomId}</h2>
-                        <div className="message-list">
+                    <div className="absolute bottom-12 right-4 bg-gray-800 p-6 rounded-lg shadow-xl">
+                        <h2 className="text-white text-lg font-bold mb-4">Chat Room</h2>
+                        <div className="message-list overflow-y-auto max-h-96">
                             {Messages.map((message, index) => (
-                                <div key={index} className={`message ${message.isSent ? "sent" : "received"}`}>
-                                    <p>{message.text}</p>
+                                <div key={index} className={`message mb-2 p-2 rounded-lg ${message.isSent ? "bg-blue-500" : "bg-green-500"} `}>
+                                    <p className="text-white">
+                                        {message.isSent ? "Sent: " : "Received: "}
+                                        {message.text}
+                                    </p>
                                 </div>
                             ))}
                         </div>
-                        <div className="message-input">
-                            <input type="text" value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} placeholder="Type a message..." />
-                            <button onClick={sendMessage}>Send</button>
+                        <div className="message-input mt-4 flex">
+                            <input
+                                type="text"
+                                value={inputMessage}
+                                onChange={(e) => setInputMessage(e.target.value)}
+                                placeholder="Type a message..."
+                                className="flex-1 rounded-lg p-2 mr-2 outline-none"
+                            />
+                            <button onClick={sendMessage} className="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                                Send
+                            </button>
                         </div>
                     </div>
                 )}

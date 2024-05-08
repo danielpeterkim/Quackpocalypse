@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 function Lobby() {
     const [roomCode, setRoomCode] = useState('');
     const [showInfo, setShowInfo] = useState(false);
+    const [start, setStart] = useState(false);
     const [members, setMembers] = useState([]);
     const [playerId, setPlayerId] = useState('');
     const navigate = useNavigate();
