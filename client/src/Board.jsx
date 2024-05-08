@@ -85,6 +85,27 @@ const Board = () => {
       }
   };
 
+
+  const endTurn = async () => {
+    try {
+        const response = await fetch(`http://localhost:3000/end-turn`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ playerId: getPlayerId(roomData.players), roomId })
+        });
+        const data = await response.json();
+        if(response.ok){
+            alert('Turn ended successfully!');
+        } else {
+            throw new Error(data.error);
+        }
+    } catch (error) {
+        console.error('Error:', error.message);
+        setError(error.message);
+    }
+};
+
+
     const chooseLoc = (action) => {
         if (location) {
             takeAction({ action: action, location: location });
@@ -246,7 +267,14 @@ const Board = () => {
         <button onClick={() => takeAction({ action: "cure", cardIndices: [0, 1, 2, 3, 5] })} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           Discover a Cure
         </button>
+        {/* Should be in a seperate button but here for now */}
+        <button onClick={endTurn} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                End Turn
+        </button>
       </div>
+
+
+
       <Hand roomId={roomId} playerName={name} onClick={handleCardClick}/>
       </div>
 

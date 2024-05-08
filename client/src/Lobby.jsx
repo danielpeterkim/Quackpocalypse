@@ -33,6 +33,9 @@ function Lobby() {
                     } else {
                         throw new Error("Player ID not found for the given name");
                     }
+                    if (data.gameStatus == "playing") {
+                        navigate(`/board/${name}/${roomId}`);
+                    }
                 } else {
                     throw new Error(data.error);
                 }
