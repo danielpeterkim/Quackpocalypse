@@ -244,7 +244,33 @@ const Board = () => {
         setError(error.message);
     }
 };
+const discardCard = async () => {
+  if (!selectedCard) {
+    alert('Please select a card to discard.');
+    return;
+  }
 
+  const playerId = getPlayerId(roomData.players);
+  if (!playerId) {
+    alert('Player ID not found');
+    return;
+  }
+
+  try {
+    const response = await fetch(`http://localhost:3000/discard-card`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ playerId, roomId, cardId: selectedCard.id })
+    });
+    const data = await response.json()
+    if (!response.ok) throw new Error(data.error)
+    alert('Card discarded successfully!')
+    setSelectedCard(null);  
+  } catch (error) {
+    console.error('Error discarding card:', error);
+    setError(error.message);
+  }
+}
 
     const chooseLoc = (action) => {
         if (location) {
@@ -430,7 +456,11 @@ const Board = () => {
                         </button>
                     </div>
 
-                    <Hand roomId={roomId} playerName={name} onClick={handleCardClick} />
+                    <button onClick={discardCard} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Discard</button>
+
+                    <Hand roomId={roomId} playerName={name} onClick={handleCardClick} selectedCardId={selectedCard}/>
+                    <PlayerDeck roomId={roomId} playerId={getPlayerId(roomData.players)}/>
+
       {selectedPlayer && (
           <div>
               <h2>{selectedPlayer}'s Hand</h2>
@@ -451,7 +481,6 @@ const Board = () => {
           ))}
       </div>
 
-                    <PlayerDeck roomId={roomId} playerId={getPlayerId(roomData.players)} />
                 </div>
                 {showChatButton && (
                     <button
