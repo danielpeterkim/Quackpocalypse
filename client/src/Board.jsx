@@ -413,7 +413,7 @@ const discardCard = async () => {
     };
 
     const showHand = (playerName) => {
-        return <Hand roomId={roomId} playerName={playerName} onClick={handleOtherClick} />;
+        return <Hand roomId={roomId} playerName={playerName} onClick={handleOtherClick} selectedCardId={sharedCard}/>;
     };
 
     const handlePlayerHandClick = (playerName) => {
