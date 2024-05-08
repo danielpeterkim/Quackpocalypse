@@ -11,6 +11,8 @@ const Board = () => {
     const [location, setLocation] = useState("");
     const [inputMessage, setInputMessage] = useState("");
     const [selectedCard, setSelectedCard] = useState(null);
+    const [sharedPlayer, setSharedPlayer] = useState(null);
+    const [sharedCard, setSharedCard] = useState(null);
     const [outbreaks, setOutbreaks] = useState(0);
     const [currentTurn, setCurrentTurn] = useState('');
     // const [playerTurn, setPlayerTurn] = useState(1);
@@ -189,11 +191,15 @@ const Board = () => {
         // matchingPlauer.iod
     };
 
+    const getOtherId = (players, pln) => {
+      const matchingPlayer = Object.keys(players).find((playerId) => players[playerId].name === pln);
+      return matchingPlayer ? matchingPlayer : undefined;
+    }
+
     const takeAction = async (args) => {
       try {
           // console.log(getPlayerId(roomData.players));
-          // console.log(roomId);
-          console.log(args);
+          // console.log(roomId);          
           setError('');
           const playerId = getPlayerId(roomData.players);
           if (!playerId) {
@@ -307,6 +313,16 @@ const discardCard = async () => {
         }
     };
 
+    const shareKnowledge = () => {
+      if(sharedCard && sharedPlayer){
+        takeAction({action: "share", playerId: getOtherId(roomData.players, sharedPlayer), cardIndex: sharedCard.id});
+        setSharedCard(null);
+        setSharedPlayer(null);
+      } else { 
+        alert("Please click a player's hand who you want to trade with and a card to take or give. ");
+      }
+    }
+
     const handleToggleChat = () => {
         if (roomData.players && Object.keys(roomData.players).length > 2) {
             setError("Chat is disabled for games of more than 2 players.");
@@ -327,7 +343,13 @@ const discardCard = async () => {
 
     const handleCardClick = (card) => {
         setSelectedCard(card);
+        setSharedCard(card);
     };
+
+    const handleOtherClick = (card) => {
+        setSharedCard(card);
+    };
+
 
     if (loading) {
         return <h1>Loading...</h1>;
@@ -391,11 +413,12 @@ const discardCard = async () => {
     };
 
     const showHand = (playerName) => {
-        return <Hand roomId={roomId} playerName={playerName} onClick={handleCardClick} />;
+        return <Hand roomId={roomId} playerName={playerName} onClick={handleOtherClick} />;
     };
 
     const handlePlayerHandClick = (playerName) => {
         setSelectedPlayer(playerName);
+        setSharedPlayer(playerName);
     };
     // const handleActionClick = (btn, actionName) => {
     //   alert(`Clicked on ${actionName}`);
@@ -448,7 +471,7 @@ const discardCard = async () => {
                             Treat
                         </button>
                         <button
-                            onClick={() => takeAction({ action: "share", playerId: getPlayerId(roomData.players), cardIndex: 0 })}
+                            onClick={() => shareKnowledge()}
                             className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                         >
                             Share Knowledge

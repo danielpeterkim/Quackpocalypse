@@ -140,7 +140,7 @@ router.post("/take-action", verifyToken, async (req, res) => {
         }
         // console.log(playerId);
         // console.log(roomId);
-        // console.log(args);
+        console.log(args);
         await takeAction(playerId, roomId, args);
     } catch (error) {
         res.status(400).json({ error: error.message });

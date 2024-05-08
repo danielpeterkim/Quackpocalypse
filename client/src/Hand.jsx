@@ -84,7 +84,7 @@ const Hand = ({ roomId, playerName, onClick, selectedCardId}) => {
         const isSelected = selectedCard && selectedCard.id === card.id;
         const cardStyle = isSelected ? { transform: 'scale(1.4)', boxShadow: '0 0 10px gold', border: '2px solid gold' } : {};
         return (
-          <div key={card.id} className={`card ${isSelected ? 'selected' : ''}`} onClick={() => handleCardClick(card)} style={cardStyle}>
+          <div key={card.id} className={`card ${isSelected ? 'selected' : ''}`} onClick={() => onClick(card)} style={cardStyle}>
               <img src={imagePath} alt={card.location} />
           </div>
         );

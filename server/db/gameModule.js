@@ -460,7 +460,7 @@ const actionShareKnowledge = async (playerId1, roomId, playerId2, cardIndex) => 
         const playerData2 = roomData.players[playerId2];
         const player1Hand = playerData1.hand;
         const player2Hand = playerData2.hand;
-        const selectedCard = await getCard("player", player1Hand[cardIndex]);
+        const selectedCard = await getCard("player", cardIndex);
         if (selectedCard.type !== "location") {
             throw new Error("You can only share location cards!");
         }
