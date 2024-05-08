@@ -9,9 +9,11 @@ const Board = () => {
     const [roomData, setRoomData] = useState({});
     const [loading, setLoading] = useState(true);
     const [location, setLocation] = useState('');
+    const [card, setCard] = useState('');
     const [error, setError] = useState('');
     const { roomId } = useParams();
     const { name } = useParams();
+    const [selectedAction, setSelectedAction] = useState(''); 
       
     useEffect(() => {
         const handleGetRoomData = async () => {
@@ -76,25 +78,22 @@ const Board = () => {
           setError(error.message);
       }
   };
-    // const handleGetRoomData = async () => {
-    //     const response = await fetch('http://localhost:3000/room-data', {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json'
-    //         },
-    //         body:JSON.stringify('rXZWjcOUmzyRNAghJ5mE')
-    //     });
-    //     const data = await response.json();
-    //     console.log(data);
-    //     if (response.ok) {
-    //         console.log(data); 
-    //         // navigate(`/lobby/${name}/${data.roomId}`);
-    //     } else {
-    //         console.error('Failed to create room:', data.error); 
-    //     }
-    // };
 
-    const [showChat, setShowChat] = useState(false);
+    const chooseLoc = () => {
+        if (location) {
+            takeAction({ action: "drive", location: location });
+        } else {
+            alert('Please click on an adjacent location before walking.');
+        }
+    }
+
+    const chooseCard = () => {
+      if (card) {
+        takeAction({ action: "directFlight", index: card });
+      } else {
+          alert('Please choose a card in your deck before flying.');
+      }
+    }
 
     // const handleToggleChat = () => {
     //   setShowChat(!showChat);
@@ -102,7 +101,10 @@ const Board = () => {
     const handleAreaClick = (areaName) => {
         // move pawn to that area 
         setLocation(areaName);
-        alert(`Clicked on: ${areaName}`);
+    };
+
+    const handleCardClick = (card) => {
+      setCard(card);
     };
 
     if (loading) {
@@ -197,10 +199,10 @@ const Board = () => {
           
 
       <div className="inline-flex rounded-md shadow-sm" role="group">
-        <button onClick={() => takeAction({ action: "drive", location: location })}  className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        <button onClick={() => chooseLoc()} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           Walk
         </button>
-        <button onClick={() => takeAction({ action: "directFlight", index: 0 })}  className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        <button onClick={() => chooseCard()}  className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           Direct Shuttle
         </button>
         <button onClick={() => takeAction({ action: "charterFlight", index: 0 })}  className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">

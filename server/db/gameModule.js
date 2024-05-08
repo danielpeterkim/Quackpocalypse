@@ -25,7 +25,7 @@ const checkPlayer = async (playerId, roomId) => {
         }
         return roomData;
     } catch (error) {
-        throw new Error("Error Checking Player: " + error.message);
+        throw new Error(error.message);
     }
 };
 
