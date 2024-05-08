@@ -69,8 +69,11 @@ const endTurn = async (playerId, roomId) => {
             const cardData = await getCard("infection", card);
             const location = cardData.location;
             const color = cardData.color;
+            // console.log("Check Color")
+            // console.log("Disease cubes")
+            // console.log(locationObject[cardData.location].diseaseCubes)
             if (roomData.eradicationMarkers[color] === false) {
-                if ((locationObject[location].diseaseCubes[color] = 3)) {
+                if ((locationObject[location].diseaseCubes[color] == 3)) {
                     console.log("outbreak occurred");
                     [locationObject, outBreakCounterValue] = await Outbreak(location, color, locationObject, outBreakCounterValue);
                     // console.log(locationObject);
@@ -172,13 +175,12 @@ const resolveEpidemic = async (playerId, roomId) => {
         playerHand = playerHand.filter((card) => card !== "epidemic");
         if (roomData.eradicationMarkers[color] === false) {
             let locationObject = roomData.locations;
-            if (locationObject[location].diseaseCubes[color] > 0) {
+            if (locationObject[location].diseaseCubes[color] == 3) {
                 console.log("outbreak occurred");
-                locationObject[location].diseaseCubes[color] = 3;
                 [locationObject, outBreakCounterValue] = await Outbreak(location, color, locationObject, outBreakCounterValue);
                 // console.log(locationObject);
             } else {
-                locationObject[location].diseaseCubes[color] = 3;
+                locationObject[location].diseaseCubes[color] += 1;
             }
             // if total num of cubes of a color is 24, game is lost
             let totalCubes = Object.values(locationObject).reduce((total, location) => total + location.diseaseCubes[color], 0);
@@ -208,14 +210,17 @@ const resolveEpidemic = async (playerId, roomId) => {
 
 const Outbreak = async (location, color, locationObject, outBreakCounterValue, outbreakChain = new Set()) => {
     try {
+        if (outbreakChain.has(location)) {
+            return [locationObject, outBreakCounterValue];
+        }   
         outbreakChain.add(location);
         // console.log(outbreakChain);
-        const adjacentLocations = locationObject[location].adjacent;
         outBreakCounterValue += 1;
         if (outBreakCounterValue >= 8) {
             await endGame(roomId, "Lost");
             throw new Error("Game Lost: Too many outbreaks");
         }
+        const adjacentLocations = locationObject[location].adjacent;
         for (const adjacentLocation of adjacentLocations) {
             if (outbreakChain.has(adjacentLocation)) {
                 continue;
@@ -223,16 +228,20 @@ const Outbreak = async (location, color, locationObject, outBreakCounterValue, o
                 if (locationObject[adjacentLocation].diseaseCubes[color] < 3) {
                     locationObject[adjacentLocation].diseaseCubes[color] += 1;
                     // console.log(locationObject[adjacentLocation].diseaseCubes[color]);
+                if (!outbreakChain.has(adjacentLocation) && locationObject[adjacentLocation].diseaseCubes[color] >= 3) {
+                    [locationObject, outBreakCounterValue] = await Outbreak(adjacentLocation, color, {...locationObject}, outBreakCounterValue, new Set([...outbreakChain]));
                 } else {
                     locationObject = await Outbreak(adjacentLocation, color, locationObject, outbreakChain);
+                    locationObject[adjacentLocation].diseaseCubes[color] = Math.min(locationObject[adjacentLocation].diseaseCubes[color] + 1, 3);
                 }
             }
-        }
+        }}
         return [locationObject, outBreakCounterValue];
     } catch (error) {
         throw new Error("Error Outbreaking: " + error.message);
     }
 };
+
 
 const discardPlayerCards = async (playerId, roomId, cards) => {
     try {
