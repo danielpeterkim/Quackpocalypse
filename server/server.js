@@ -8,12 +8,13 @@ import { createRoom, joinRoom, findRoom, updateSettings, removePlayer, startGame
 import { createDecks, getDeck, getCard } from "./db/cardsModule.js";
 import { takeAction, endTurn, drawPlayerCards, discardPlayerCards, resolveEpidemic, getDiseaseColors, getLegalActions} from "./db/gameModule.js";
 // await createRoom("Dan", false, 5);
-// await joinRoom("Joe", "WMUFYX");
-// await startGame("655472ce-5d2e-43ce-a871-4b1b608747a8", "pOGGu8NPpiyIfIzIQigT");
+// await joinRoom("Joe", "UMYKDJ");
+// await startGame("9e5eb63f-3dff-41d6-9569-5684bc4d3a5c", "uMzUBbDnVQUDxRnkxeb5");
 // await takeAction("4c9eb41b-a229-4412-bea1-710d51fbb892", "rXZWjcOUmzyRNAghJ5mE", {action: "drive", location: "Burchard"});
 // await takeAction("4c9eb41b-a229-4412-bea1-710d51fbb892", "rXZWjcOUmzyRNAghJ5mE", {action: "direct flight", index: 0})
 // await drawPlayerCards("4c9eb41b-a229-4412-bea1-710d51fbb892", "rXZWjcOUmzyRNAghJ5mE");
 // await endTurn("4c9eb41b-a229-4412-bea1-710d51fbb892", "rXZWjcOUmzyRNAghJ5mE");
+// await createDecks();
 
 // await takeAction("9cf6bcac-d782-4b5e-a8b5-a4369b82c039", "rXZWjcOUmzyRNAghJ5mE", {action: "shuttleFlight", location: "Duck Bistro"});
 // await takeAction("9cf6bcac-d782-4b5e-a8b5-a4369b82c039", "rXZWjcOUmzyRNAghJ5mE", {action: "directFlight", index: 0});
@@ -28,7 +29,7 @@ import { takeAction, endTurn, drawPlayerCards, discardPlayerCards, resolveEpidem
 // console.log(await getLegalActions("9cf6bcac-d782-4b5e-a8b5-a4369b82c039", "rXZWjcOUmzyRNAghJ5mE"));
 
 // await discardPlayerCards("b546741c-2256-45a4-9a25-5bce83c82336", "f9Gvb6TKAdcTCwtlYNiB", [36, 26]);
-// await resolveEpidemic("b546741c-2256-45a4-9a25-5bce83c82336", "f9Gvb6TKAdcTCwtlYNiB");
+// await resolveEpidemic("9e5eb63f-3dff-41d6-9569-5684bc4d3a5c", "uMzUBbDnVQUDxRnkxeb5");
 // await updateSettings("16be9e12-e105-4baa-8a3f-fbe4b2c49811", "XEanZd3HYibLagkVuwC9", true, 6);
 // await removePlayer("16be9e12-e105-4baa-8a3f-fbe4b2c49811", "16be9e12-e105-4baa-8a3f-fbe4b2c49811", "XEanZd3HYibLagkVuwC9");
 // await createDecks();
