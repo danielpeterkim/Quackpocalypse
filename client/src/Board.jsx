@@ -12,7 +12,7 @@ const Board = () => {
     const [inputMessage, setInputMessage] = useState("");
     const [selectedCard, setSelectedCard] = useState(null);
     const [outbreaks, setOutbreaks] = useState(0);
-    const [currentTurn, setCurrentTurn] = useState('');
+    const [currentTurn, setCurrentTurn] = useState("");
     // const [playerTurn, setPlayerTurn] = useState(1);
     const [selectedPlayer, setSelectedPlayer] = useState(null);
     const [color, setColor] = useState("");
@@ -190,95 +190,94 @@ const Board = () => {
     };
 
     const takeAction = async (args) => {
-      try {
-          // console.log(getPlayerId(roomData.players));
-          // console.log(roomId);
-          console.log(args);
-          setError('');
-          const playerId = getPlayerId(roomData.players);
-          if (!playerId) {
-              console.error('Player ID not found');
-              return;
-          }
-          // const playerNum = roomData.players[playerId].playerNumber;
-          // if(playerNum !== playerTurn){
-          //   throw new Error('Please wait your turn');
-          // }
-          if(playerId !== currentTurn){
-            throw new Error('Please wait your turn');
-          }
-          const response = await fetch('http://localhost:3000/take-action', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({ playerId: getPlayerId(roomData.players), roomId: roomId, args: args })
-          });
-          const data = await response.json();
-          if (response.ok) {
-              console.log('Action successfully completed');
-              // window.location.reload();
-          } else {
-              throw new Error(data.error);
-          }
-      } catch (error) {
-          console.error('Error:', error.message);
-          setError(error.message);
-      }
-  };
-
-
-  const endTurn = async () => {
-    try {
-        const response = await fetch(`http://localhost:3000/end-turn`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ playerId: getPlayerId(roomData.players), roomId }),
-        });
-        const data = await response.json();
-        if(response.ok){
-            alert('Turn ended successfully!');
-            // if(playerTurn === roomData.players.length){
-            //   setPlayerTurn(1);
-            // } else {
-            //   setPlayerTurn(playerTurn + 1);
+        try {
+            // console.log(getPlayerId(roomData.players));
+            // console.log(roomId);
+            console.log(args);
+            setError("");
+            const playerId = getPlayerId(roomData.players);
+            if (!playerId) {
+                console.error("Player ID not found");
+                return;
+            }
+            // const playerNum = roomData.players[playerId].playerNumber;
+            // if(playerNum !== playerTurn){
+            //   throw new Error('Please wait your turn');
             // }
-        } else {
-            throw new Error(data.error);
+            if (playerId !== currentTurn) {
+                throw new Error("Please wait your turn");
+            }
+            const response = await fetch("http://localhost:3000/take-action", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ playerId: getPlayerId(roomData.players), roomId: roomId, args: args }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                console.log("Action successfully completed");
+                // window.location.reload();
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (error) {
+            console.error("Error:", error.message);
+            setError(error.message);
         }
-    } catch (error) {
-        console.error('Error:', error.message);
-        setError(error.message);
-    }
-};
-const discardCard = async () => {
-  if (!selectedCard) {
-    alert('Please select a card to discard.');
-    return;
-  }
+    };
 
-  const playerId = getPlayerId(roomData.players);
-  if (!playerId) {
-    alert('Player ID not found');
-    return;
-  }
+    const endTurn = async () => {
+        try {
+            const response = await fetch(`http://localhost:3000/end-turn`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ playerId: getPlayerId(roomData.players), roomId }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                alert("Turn ended successfully!");
+                // if(playerTurn === roomData.players.length){
+                //   setPlayerTurn(1);
+                // } else {
+                //   setPlayerTurn(playerTurn + 1);
+                // }
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (error) {
+            console.error("Error:", error.message);
+            setError(error.message);
+        }
+    };
+    const discardCard = async () => {
+        if (!selectedCard) {
+            alert("Please select a card to discard.");
+            return;
+        }
 
-  try {
-    const response = await fetch(`http://localhost:3000/discard-card`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ playerId, roomId, cardId: selectedCard.id }),
-    });
-    const data = await response.json()
-    if (!response.ok) throw new Error(data.error)
-    alert('Card discarded successfully!')
-    setSelectedCard(null);  
-  } catch (error) {
-    console.error('Error discarding card:', error);
-    setError(error.message);
-  }
-}
+        const playerId = getPlayerId(roomData.players);
+        if (!playerId) {
+            alert("Player ID not found");
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:3000/discard-card`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ playerId, roomId, cardId: selectedCard.id }),
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error);
+            alert("Card discarded successfully!");
+            setSelectedCard(null);
+        } catch (error) {
+            console.error("Error discarding card:", error);
+            setError(error.message);
+        }
+    };
 
     const chooseLoc = (action) => {
         if (location) {
@@ -402,94 +401,100 @@ const discardCard = async () => {
     // }
 
     return (
-      // Using Tailwind classes to control maximum size and responsiveness
-      <div className="main-content">
-      <div className="min-h-screen bg-gray-800 flex justify-center items-center">
-      <div className="w-full h-full max-w-4xl max-h-3xl mx-auto">
-      {error && <p className="text-red-600">{error}</p>}
-      <svg className="w-full h-full" viewBox="0 0 800 600">
-            <image href={('/0.png')} width="800" height="600"/>
-            {areas.map(area => (
-              <Area
-                key={area.name}
-                x={area.x}
-                y={area.y}
-                width={35}
-                height={25}
-                color={area.color}
-                onClick={handleAreaClick}
-                name={area.name}
-                roomData={roomData}
-                cubeClick={handleCubeClick}
-              />
-            ))}
-         <text x="40" y="540" fill="black" fontSize="20">Outbreaks: {outbreaks}</text>
-        <text x="610" y="540" fill="black" fontSize="20">Player {roomData.players[currentTurn].name}'s Turn</text>
-         {/* <text x="610" y="540" fill="black" fontSize="20">Player {playerTurn}'s Turn</text> */}
-          </svg>
+        // Using Tailwind classes to control maximum size and responsiveness
+        <div className="main-content">
+            <div className="min-h-screen bg-gray-800 flex justify-center items-center">
+                <div className="w-full h-full max-w-4xl max-h-3xl mx-auto">
+                    {error && <p className="text-red-600">{error}</p>}
+                    <div className="w-full h-full max-w-4xl max-h-3xl mx-auto outline outline-2 outline-blue-500 rounded-lg">
+                        <svg className="w-full h-full rounded-lg" viewBox="0 0 800 600">
+                            <image href={"/0.png"} width="800" height="600" />
+                            {areas.map((area) => (
+                                <Area
+                                    key={area.name}
+                                    x={area.x}
+                                    y={area.y}
+                                    width={35}
+                                    height={25}
+                                    color={area.color}
+                                    onClick={handleAreaClick}
+                                    name={area.name}
+                                    roomData={roomData}
+                                    cubeClick={handleCubeClick}
+                                />
+                            ))}
+                            <text x="40" y="540" fill="black" fontSize="20">
+                                Outbreaks: {outbreaks}
+                            </text>
+                            <text x="610" y="540" fill="black" fontSize="20">
+                                Player {roomData.players[currentTurn].name}'s Turn
+                            </text>
+                            {/* <text x="610" y="540" fill="black" fontSize="20">Player {playerTurn}'s Turn</text> */}
+                        </svg>
+                    </div>
 
-                    <div className="inline-flex rounded-md shadow-sm" role="group">
-                        <button onClick={() => chooseLoc("drive")} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    <div className="inline-flex rounded-md shadow-sm space-x-2 mb-4 mt-4" role="group">
+                        <button onClick={() => chooseLoc("drive")} className="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold rounded-lg">
                             Walk
                         </button>
-                        <button onClick={() => chooseCard("directFlight")} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        <button onClick={() => chooseCard("directFlight")} className="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold rounded-lg">
                             Direct Shuttle
                         </button>
-                        <button onClick={() => chooseCard("charterFlight")} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        <button onClick={() => chooseCard("charterFlight")} className="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold rounded-lg">
                             Charter Shuttle
                         </button>
-                        <button onClick={() => chooseLoc("shuttleFlight")} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        <button onClick={() => chooseLoc("shuttleFlight")} className="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold rounded-lg">
                             Standard Shuttle
                         </button>
-                        <button onClick={() => takeAction({ action: "build" })} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        <button onClick={() => takeAction({ action: "build" })} className="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold rounded-lg">
                             Build Research Camp
                         </button>
-                        <button onClick={() => chooseLocColor()} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        <button onClick={() => chooseLocColor()} className="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold rounded-lg">
                             Treat
                         </button>
                         <button
                             onClick={() => takeAction({ action: "share", playerId: getPlayerId(roomData.players), cardIndex: 0 })}
-                            className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                            className="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold rounded-lg"
                         >
                             Share Knowledge
                         </button>
                         <button
                             onClick={() => takeAction({ action: "cure", cardIndices: [0, 1, 2, 3, 5] })}
-                            className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                            className="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold rounded-lg"
                         >
                             Discover a Cure
                         </button>
-                        {/* Should be in a seperate button but here for now */}
-                        <button onClick={endTurn} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        <button onClick={endTurn} className="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold rounded-lg">
                             End Turn
+                        </button>
+                        <button onClick={discardCard} className="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold rounded-lg">
+                            Discard
                         </button>
                     </div>
 
-                    <button onClick={discardCard} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Discard</button>
+                    <Hand roomId={roomId} playerName={name} onClick={handleCardClick} selectedCardId={selectedCard} />
+                    <PlayerDeck roomId={roomId} playerId={getPlayerId(roomData.players)} />
 
-                    <Hand roomId={roomId} playerName={name} onClick={handleCardClick} selectedCardId={selectedCard}/>
-                    <PlayerDeck roomId={roomId} playerId={getPlayerId(roomData.players)}/>
-
-      {selectedPlayer && (
-          <div>
-              <h2>{selectedPlayer}'s Hand</h2>
-              {showHand(selectedPlayer)}
-          </div>
-      )}
-      <div className="player-hands">
-          {Object.values(roomData.players).map((player) => (
-              player.name !== name && (
-                  <button
-                      key={player.name}
-                      onClick={() => handlePlayerHandClick(player.name)}
-                      className="cursor-pointer bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-xs"
-                  >
-                      {player.name}'s Hand
-                  </button>
-              )
-          ))}
-      </div>
-
+                    {selectedPlayer && (
+                        <div>
+                            <h2>{selectedPlayer}'s Hand</h2>
+                            {showHand(selectedPlayer)}
+                        </div>
+                    )}
+                    <div className="player-hands">
+                        {Object.values(roomData.players).map(
+                            (player) =>
+                                player.name !== name && (
+                                    <button
+                                        key={player.name}
+                                        onClick={() => handlePlayerHandClick(player.name)}
+                                        className="cursor-pointer bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-xs"
+                                    >
+                                        {player.name}'s Hand
+                                    </button>
+                                )
+                        )}
+                    </div>
                 </div>
                 {showChatButton && (
                     <button

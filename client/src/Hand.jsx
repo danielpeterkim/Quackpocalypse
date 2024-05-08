@@ -82,11 +82,12 @@ const Hand = ({ roomId, playerName, onClick, selectedCardId}) => {
     const renderCard = (card) => {
         const imagePath = `/Cards/${card.color}/${card.location}.png`;
         const isSelected = selectedCard && selectedCard.id === card.id;
-        const cardStyle = isSelected ? { transform: 'scale(1.4)', boxShadow: '0 0 10px gold', border: '2px solid gold' } : {};
+        const cardStyle = isSelected ? { transform: 'scale(1.4)', boxShadow: '0 0 10px gold', border: '2px solid gold', borderRadius: '0.5rem' } : {};
+
         return (
-          <div key={card.id} className={`card ${isSelected ? 'selected' : ''}`} onClick={() => handleCardClick(card)} style={cardStyle}>
-              <img src={imagePath} alt={card.location} />
-          </div>
+            <div key={card.id} className={`card rounded-lg overflow-hidden ${isSelected ? "selected" : ""}`} onClick={() => handleCardClick(card)} style={cardStyle}>
+                <img src={imagePath} alt={card.location} className="w-full h-full object-cover" />
+            </div>
         );
     };
 

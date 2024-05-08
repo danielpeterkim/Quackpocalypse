@@ -30,15 +30,15 @@ const PlayerDeck = ({ playerId, roomId }) => {
 
     return (
         <div className="player-deck-container">
-            <img 
-                src="/Player Deck.png" 
+            <img
+                src="/Player Deck.png"
                 alt="Player Deck"
-                onClick={drawCards} 
-                className={`player-deck ${loading ? 'loading' : ''}`} 
+                onClick={!loading ? drawCards : undefined} // Prevent interaction when loading
+                className={`player-deck rounded-lg transition-transform duration-200 ease-in-out ${loading ? "loading opacity-50 cursor-not-allowed" : "hover:scale-105"}`}
                 title="Click to draw cards"
             />
-            {error && <p className="error-message">{error}</p>}
-            {loading && <p>Drawing...</p>}
+            {error && <p className="error-message text-red-500">{error}</p>}
+            {loading && <p className="loading-message text-blue-600">Drawing...</p>}
         </div>
     );
 };
