@@ -53,6 +53,7 @@ const endTurn = async (playerId, roomId) => {
         let infectionRate = roomData.infectionRate;
         let infectionDeck = roomData.infectionDeck;
         let infectionDiscard = roomData.infectionDiscard;
+        let realInfectionRate = 0;
         if (infectionRate === 0 || infectionRate === 1 || infectionRate === 2) {
             realInfectionRate = 2;
         } else if (infectionRate === 3 || infectionRate === 4) {

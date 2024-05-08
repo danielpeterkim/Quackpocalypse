@@ -14,6 +14,7 @@ const Board = () => {
     const [error, setError] = useState('');
     const { roomId } = useParams();
     const { name } = useParams();
+    const refreshInterval = 5000;
       
     useEffect(() => {
         const handleGetRoomData = async () => {
@@ -41,8 +42,11 @@ const Board = () => {
 
         if (roomId) {
             handleGetRoomData();
+            const intervalId = setInterval(handleGetRoomData, refreshInterval);
+            return () => clearInterval(intervalId); //cleans up and prvents memory leaks
         }
     }, []);
+
 
     const getPlayerId = (players) => {
       const matchingPlayer = Object.keys(players).find(playerId => players[playerId].name === name);
