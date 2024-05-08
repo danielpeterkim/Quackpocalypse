@@ -7,7 +7,8 @@ import './index.css'
 const Board = () => {
     const [roomData, setRoomData] = useState({});
     const [loading, setLoading] = useState(true);
-
+    const [location, setLocation] = useState('');
+    const [error, setError] = useState('');
     const { roomId } = useParams();
     const { name } = useParams();
       
@@ -27,10 +28,11 @@ const Board = () => {
                     setRoomData(data);
                     setLoading(false);
                 } else {
-                    console.error('Failed to get room data:', data.error);
+                    throw new Error(data.error);
                 }
             } catch (error) {
                 console.error('Error getting room data:', error.message);
+                setError(error.message);
             }
         };
 
@@ -40,12 +42,16 @@ const Board = () => {
     }, []);
 
     const getPlayerId = (players) => {
-      const matchingPlayer = Object.values(players).find(player => player.name === name);
-      return matchingPlayer ? matchingPlayer.playerId : undefined;
+      const matchingPlayer = Object.keys(players).find(playerId => players[playerId].name === name);
+      return matchingPlayer ? matchingPlayer: undefined;
+      // matchingPlauer.iod 
     };
 
     const takeAction = async (args) => {
       try {
+          // console.log(getPlayerId(roomData.players));
+          // console.log(roomId);
+          // console.log(args);
           const playerId = getPlayerId(roomData.players);
           if (!playerId) {
               console.error('Player ID not found');
@@ -56,16 +62,17 @@ const Board = () => {
               headers: {
                   'Content-Type': 'application/json'
               },
-              body: JSON.stringify({ playerId: playerId, roomId: roomId, args: args })
+              body: JSON.stringify({ playerId: getPlayerId(roomData.players), roomId: roomId, args: args })
           });
           const data = await response.json();
           if (response.ok) {
               console.log('Action successfully completed');
           } else {
-              console.error('Error:', data.error);
+              throw new Error(data.error);
           }
       } catch (error) {
           console.error('Error:', error.message);
+          setError(error.message);
       }
   };
     // const handleGetRoomData = async () => {
@@ -166,6 +173,7 @@ const Board = () => {
       // Using Tailwind classes to control maximum size and responsiveness
       <div className="min-h-screen bg-gray-800 flex justify-center items-center">
       <div className="w-full h-full max-w-4xl max-h-3xl mx-auto">
+      {error && <p className="text-red-600">{error}</p>}
       <svg className="w-full h-full" viewBox="0 0 800 600">
             <image href={('/0.png')} width="800" height="600"/>
             {areas.map(area => (

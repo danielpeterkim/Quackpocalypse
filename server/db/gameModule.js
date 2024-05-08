@@ -17,9 +17,9 @@ const checkPlayer = async (playerId, roomId) => {
         if (roomData.gameStatus !== "playing") {
             throw new Error("Game has not started or has ended");
         }
-        if (roomData.turnOrder[0] !== playerId) {
-            throw new Error("Not player's turn");
-        }
+        // if (roomData.turnOrder[0] !== playerId) {
+        //     throw new Error("Not player's turn");
+        // }
         if (roomData.players[playerId].actionsRemaining < 1) {
             throw new Error("No actions left");
         }
@@ -178,14 +178,13 @@ const discardPlayerCards = async (playerId, roomId, cards) => {
 };
 
 const takeAction = async(playerId, roomId, args) => {
-    
     let playerData;
     try{
         const room = doc(db, "rooms", roomId);
         const roomData = await checkPlayer(playerId, roomId);
         playerData = roomData.players[playerId];
     } catch (error) {
-        throw new Error("Error fetching room data");
+        throw new Error(error.message);
     }
     if (playerData.actionsRemaining <= 0) throw new Error("Player is out of actions!");
     if (args.action === "drive") return await actionDrive(playerId, roomId, args.location);
@@ -479,7 +478,7 @@ const getLegalActions = async(roomData) => {
         playerPossibleCures = await getPossibleCures(roomId, playerId);
         researchStationLocations = await getResearchStationLocations(roomId);
     } catch (error) {
-        throw new Error("Error fetching room data: " + error.message);
+        throw new Error(error.message);
     }
 
     if (playerData.actionsRemaining <= 0 || roomData.turnOrder[0] !== playerId) {

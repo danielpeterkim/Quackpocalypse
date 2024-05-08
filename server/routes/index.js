@@ -56,6 +56,9 @@ router.post('/start-game', async(req, res) => {
 router.post('/take-action', async(req,res) => {
   try{
     const {playerId, roomId, args} = req.body;
+    // console.log(playerId);
+    // console.log(roomId);
+    // console.log(args);
     await takeAction(playerId, roomId, args);
   } catch (error){ 
     res.status(400).json({ error: error.message });

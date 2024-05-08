@@ -302,7 +302,7 @@ const getRoomData = async(roomId) => {
         const roomData = roomInfo.data();
         return roomData;
     } catch (error) {
-        throw new Error("Error fetching Room Details: " + error.message);
+        throw new Error(error.message);
     }
 }
 
