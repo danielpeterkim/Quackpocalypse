@@ -12,15 +12,17 @@ function Lobby() {
     let [error, setError] = useState(''); 
     const { name } = useParams();
     let refreshInterval = 5000; //5 second refresh
+    let token = localStorage.getItem('token');
     useEffect(() => {
         const handleGetRoomData = async () => {
             try {
-                const response = await fetch('http://localhost:3000/room-data', {
-                    method: 'POST',
+                const response = await fetch("http://localhost:3000/room-data", {
+                    method: "POST",
                     headers: {
-                        'Content-Type': 'application/json'
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
                     },
-                    body: JSON.stringify({ roomId: roomId })
+                    body: JSON.stringify({ roomId: roomId }),
                 });
     
                 const data = await response.json();
@@ -60,12 +62,13 @@ function Lobby() {
             try {
                 console.log(playerId);
                 console.log(roomId);
-                const response = await fetch('http://localhost:3000/start-game', {
-                    method: 'POST',
+                const response = await fetch("http://localhost:3000/start-game", {
+                    method: "POST",
                     headers: {
-                        'Content-Type': 'application/json'
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
                     },
-                    body: JSON.stringify({ playerId: playerId, roomId: roomId })
+                    body: JSON.stringify({ playerId: playerId, roomId: roomId }),
                 });
                 const data = await response.json();
                 if (response.ok) {
@@ -91,12 +94,13 @@ function Lobby() {
         try {
             console.log(player);
             console.log(roomId);
-            const response = await fetch('http://localhost:3000/remove-player', {
-                method: 'POST',
+            const response = await fetch("http://localhost:3000/remove-player", {
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json'
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ creatorId: playerId, userId: player, roomId: roomId })
+                body: JSON.stringify({ creatorId: playerId, userId: player, roomId: roomId }),
             });
             const data = await response.json();
             if (response.ok) {

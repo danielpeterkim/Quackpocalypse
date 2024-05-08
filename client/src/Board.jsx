@@ -26,6 +26,7 @@ const Board = () => {
     const { roomId } = useParams();
     const { name } = useParams();
     const refreshInterval = 5000;
+    let token = localStorage.getItem("token");
 
     useEffect(() => {
         const newSocket = io("http://localhost:3000");
@@ -155,6 +156,7 @@ const Board = () => {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
                     },
                     body: JSON.stringify({ roomId: roomId }),
                 });
@@ -177,7 +179,7 @@ const Board = () => {
         if (roomId) {
             handleGetRoomData();
             // const intervalId = setInterval(handleGetRoomData, refreshInterval);
-            // return () => clearInterval(intervalId); 
+            // return () => clearInterval(intervalId);
         }
     }, []);
 
@@ -208,7 +210,8 @@ const Board = () => {
           const response = await fetch('http://localhost:3000/take-action', {
               method: 'POST',
               headers: {
-                  'Content-Type': 'application/json'
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`,
               },
               body: JSON.stringify({ playerId: getPlayerId(roomData.players), roomId: roomId, args: args })
           });
@@ -229,9 +232,9 @@ const Board = () => {
   const endTurn = async () => {
     try {
         const response = await fetch(`http://localhost:3000/end-turn`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ playerId: getPlayerId(roomData.players), roomId })
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ playerId: getPlayerId(roomData.players), roomId }),
         });
         const data = await response.json();
         if(response.ok){
@@ -263,9 +266,9 @@ const discardCard = async () => {
 
   try {
     const response = await fetch(`http://localhost:3000/discard-card`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ playerId, roomId, cardId: selectedCard.id })
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ playerId, roomId, cardId: selectedCard.id }),
     });
     const data = await response.json()
     if (!response.ok) throw new Error(data.error)
@@ -384,17 +387,16 @@ const discardCard = async () => {
     const startAction = (e) => {
         const target = e.target;
 
-      target.style = 3;
-    }
-  
+        target.style = 3;
+    };
+
     const showHand = (playerName) => {
-      return <Hand roomId={roomId} playerName={playerName} onClick={handleCardClick} />;
-  };
+        return <Hand roomId={roomId} playerName={playerName} onClick={handleCardClick} />;
+    };
 
-
-  const handlePlayerHandClick = (playerName) => {
-      setSelectedPlayer(playerName);
-  };
+    const handlePlayerHandClick = (playerName) => {
+        setSelectedPlayer(playerName);
+    };
     // const handleActionClick = (btn, actionName) => {
     //   alert(`Clicked on ${actionName}`);
     // }

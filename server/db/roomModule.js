@@ -70,7 +70,7 @@ const createRoom = async (name, hiddenHands, epidemicCards) => {
         }
 
         const docRef = await addDoc(roomCollection, roomDoc);
-        return docRef.id;
+        return [docRef.id, userId];
     } catch (error) {
         throw new Error("Error Creating Room: " + error.message);
     }
@@ -130,7 +130,7 @@ const joinRoom = async (name, roomCode) => {
         await updateDoc(room, {
             [`players.${userId}`]: playerData,
         });
-        return roomId;
+        return [roomId, userId];
     } catch (error) {
         throw new Error("Error Joining Room: " + error.message);
     }

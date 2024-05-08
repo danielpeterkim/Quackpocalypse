@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import './index.css'; 
+let token = localStorage.getItem('token');
 
 const Hand = ({ roomId, playerName, onClick, selectedCardId}) => {
     const [roomData, setRoomData] = useState({});
@@ -12,10 +13,10 @@ const Hand = ({ roomId, playerName, onClick, selectedCardId}) => {
     useEffect(() => {
       const fetchRoomData = async () => {
           try {
-              const response = await fetch('http://localhost:3000/room-data', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ roomId })
+              const response = await fetch("http://localhost:3000/room-data", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                  body: JSON.stringify({ roomId }),
               });
 
               if (response.ok) {
