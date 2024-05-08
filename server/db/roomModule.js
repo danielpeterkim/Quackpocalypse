@@ -19,6 +19,7 @@ const createRoom = async (name, hiddenHands, epidemicCards) => {
             throw new Error("Invalid epidemic cards");
         }
         let locations = locationsInit;
+        let playerNumber = 1;
         const userId = uuidv4();
 
         const roomDoc = {
@@ -62,6 +63,11 @@ const createRoom = async (name, hiddenHands, epidemicCards) => {
             playerDiscard: [],
             turnOrder: []
         };
+
+        for (const userId in roomDoc.players) {
+            roomDoc.players[userId].playerNumber = playerNumber;
+            playerNumber++;
+        }
 
         const docRef = await addDoc(roomCollection, roomDoc);
         return docRef.id;
@@ -110,6 +116,8 @@ const joinRoom = async (name, roomCode) => {
         if (Object.values(roomData.players).some((player) => player.name === name)) {
             throw new Error("Name already taken");
         }
+        const playerCount = Object.keys(roomData.players).length;
+        const playerNumber = playerCount + 1;
         const playerData = {
             name: name,
             location: "Babbio",
@@ -117,6 +125,7 @@ const joinRoom = async (name, roomCode) => {
             hand: {},
             actionsRemaining: 4,
             drewCards: false,
+            playerNumber: playerNumber
         };
         await updateDoc(room, {
             [`players.${userId}`]: playerData,

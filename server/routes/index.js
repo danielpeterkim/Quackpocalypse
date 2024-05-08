@@ -1,5 +1,5 @@
 import express from "express";
-import { createRoom, joinRoom, findRoom, startGame } from "../db/roomModule.js";
+import { createRoom, joinRoom, findRoom, startGame, removePlayer } from "../db/roomModule.js";
 import { getRoomData } from "../db/roomModule.js";
 import { checkPlayer, endTurn, takeAction, drawPlayerCards, discardPlayerCards, resolveEpidemic, getDiseaseColors, getLegalActions } from "../db/gameModule.js";
 import { getCard } from "../db/cardsModule.js";
@@ -53,6 +53,16 @@ router.post("/start-game", async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
+
+router.post("/remove-player", async(req,res) => {
+  try{
+    const { creatorId, userId, roomId } = req.body;
+    const id = await removePlayer(creatorId, userId, roomId);
+    res.json(id);
+  } catch(error){
+    res.status(400).json({ error: error.message });
+  }
+})
 
 router.post('/take-action', async(req,res) => {
   try{
