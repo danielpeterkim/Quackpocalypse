@@ -7,7 +7,7 @@ const Hand = ({ roomId, playerName, onClick}) => {
     const [playerHand, setPlayerHand] = useState([]);
     const [loading, setLoading] = useState(true);
     const [ selectedCard, setSelectedCard ] = useState(null);
-
+    let refreshInterval = 5000;
     useEffect(() => {
       const fetchRoomData = async () => {
           setLoading(true);
@@ -35,7 +35,9 @@ const Hand = ({ roomId, playerName, onClick}) => {
 
         if (roomId) {
           fetchRoomData();
-        }
+          const intervalId = setInterval(fetchRoomData, refreshInterval);
+          return () => clearInterval(intervalId); //cleans up and prvents memory leaks
+      }
     }, [roomId])
 
     const fetchCardDetails = async (cardId) => {

@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import Area from './Area';
 import Hand from './Hand'; 
 import './index.css'
+import PlayerDeck from './PlayerDeck'
 // import Chat from './Chat';
 
 const Board = () => {
@@ -285,6 +286,7 @@ const Board = () => {
 
 
       <Hand roomId={roomId} playerName={name} onClick={handleCardClick}/>
+      <PlayerDeck roomId={roomId} playerId={getPlayerId(roomData.players)}/>
       </div>
 
           {/* <button
