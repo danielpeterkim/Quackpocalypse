@@ -12,7 +12,8 @@ const Board = () => {
     const [location, setLocation] = useState('');
     const [selectedCard, setSelectedCard] = useState(null);
     const [outbreaks, setOutbreaks] = useState(0);
-    const [playerTurn, setPlayerTurn] = useState(0);
+    const [playerTurn, setPlayerTurn] = useState(1);
+    const [playerNum, setPlayerNum] = useState(0);
     const [color, setColor] = useState('');
     const [error, setError] = useState('');
     const { roomId } = useParams();
@@ -68,6 +69,10 @@ const Board = () => {
           if (!playerId) {
               console.error('Player ID not found');
               return;
+          }
+          const playerNum = roomData.players[playerId].playerNumber;
+          if(playerNum !== playerTurn){
+            throw new Error('Please wait your turn');
           }
           const response = await fetch('http://localhost:3000/take-action', {
               method: 'POST',

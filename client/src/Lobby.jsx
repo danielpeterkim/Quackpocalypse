@@ -31,7 +31,8 @@ function Lobby() {
                     if (plId) {
                         setPlayerId(plId);
                     } else {
-                        throw new Error("Player ID not found for the given name");
+                        //throw new Error("Player ID not found for the given name");
+                        navigate('/error');
                     }
                     console.log(data.gameStatus);
                     if (data.gameStatus === "playing") {
@@ -48,8 +49,8 @@ function Lobby() {
 
         if (roomId) {
             handleGetRoomData();
-            const intervalId = setInterval(handleGetRoomData, refreshInterval);
-            return () => clearInterval(intervalId); //cleans up and prvents memory leaks
+            // const intervalId = setInterval(handleGetRoomData, refreshInterval);
+            // return () => clearInterval(intervalId);
         }
     }, []);
 
@@ -69,7 +70,6 @@ function Lobby() {
                 if (response.ok) {
                     // console.log('Room ID:', roomId);
                     // console.log('Player Id starting:' + playerId);
-                    setStart(true);
                     navigate(`/board/${name}/${roomId}`);
                 } else {
                     console.log('Room ID:', data.roomId);
