@@ -9,11 +9,11 @@ const Board = () => {
     const [roomData, setRoomData] = useState({});
     const [loading, setLoading] = useState(true);
     const [location, setLocation] = useState('');
-    const [card, setCard] = useState('');
+    const [selectedCard, setSelectedCard] = useState(null);
+    const [color, setColor] = useState('');
     const [error, setError] = useState('');
     const { roomId } = useParams();
     const { name } = useParams();
-    const [selectedAction, setSelectedAction] = useState(''); 
       
     useEffect(() => {
         const handleGetRoomData = async () => {
@@ -70,6 +70,7 @@ const Board = () => {
           const data = await response.json();
           if (response.ok) {
               console.log('Action successfully completed');
+              window.location.reload();
           } else {
               throw new Error(data.error);
           }
@@ -79,20 +80,32 @@ const Board = () => {
       }
   };
 
-    const chooseLoc = () => {
+    const chooseLoc = (action) => {
         if (location) {
-            takeAction({ action: "drive", location: location });
+            takeAction({ action: action, location: location });
+            setLocation('');
         } else {
             alert('Please click on an adjacent location before walking.');
         }
     }
 
-    const chooseCard = () => {
-      if (card) {
-        takeAction({ action: "directFlight", index: card });
+    const chooseCard = (action) => {
+      if (selectedCard) {
+        takeAction({ action: action, index: selectedCard.id });
+        setSelectedCard(null);
+        setColor('');
       } else {
           alert('Please choose a card in your deck before flying.');
       }
+    }
+
+    const chooseLocColor = () => {
+        if(color){
+          takeAction({ action: "treat", color: color});
+          setColor('');
+        } else{
+          alert('Please click on a cube of the color you want before treating.');
+        }
     }
 
     // const handleToggleChat = () => {
@@ -103,8 +116,12 @@ const Board = () => {
         setLocation(areaName);
     };
 
+    const handleCubeClick = (cube) => {
+      setColor(cube);
+    }
+
     const handleCardClick = (card) => {
-      setCard(card);
+      setSelectedCard(card);
     };
 
     if (loading) {
@@ -191,6 +208,7 @@ const Board = () => {
                 onClick={handleAreaClick}
                 name={area.name}
                 roomData={roomData}
+                cubeClick={handleCubeClick}
               />
             ))}
           </svg>
@@ -199,22 +217,22 @@ const Board = () => {
           
 
       <div className="inline-flex rounded-md shadow-sm" role="group">
-        <button onClick={() => chooseLoc()} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        <button onClick={() => chooseLoc("drive")} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           Walk
         </button>
-        <button onClick={() => chooseCard()}  className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        <button onClick={() => chooseCard("directFlight")}  className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           Direct Shuttle
         </button>
-        <button onClick={() => takeAction({ action: "charterFlight", index: 0 })}  className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        <button onClick={() => chooseCard("charterFlight")}  className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           Charter Shuttle
         </button>
-        <button onClick={() => takeAction({ action: "shuttleFlight", location: location })} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        <button onClick={() => chooseLoc("shuttleFlight")} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           Standard Shuttle
         </button>
         <button onClick={() => takeAction({ action: "build" })}  className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           Build Research Camp
         </button>
-        <button onClick={() => takeAction({ action: "treat", color: "blue" })} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        <button onClick={() => chooseLocColor()} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           Treat
         </button>
         <button onClick={() => takeAction({ action: "share", playerId: getPlayerId(roomData.players), cardIndex: 0 })}className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
@@ -224,11 +242,8 @@ const Board = () => {
           Discover a Cure
         </button>
       </div>
+      <Hand roomId={roomId} playerName={name} onClick={handleCardClick}/>
       </div>
-
-
-
-      <Hand roomId={roomId} playerName={name} />
 
           {/* <button
             onClick={handleToggleChat}

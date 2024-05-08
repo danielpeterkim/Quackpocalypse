@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 // const Area = ({ x, y, width, height, color, onClick, name, pawns, cubes }) => (
-const Area = ({ x, y, width, height, color, onClick, name, roomData}) => {
+const Area = ({ x, y, width, height, color, onClick, name, roomData, cubeClick}) => {
       let pawnColors = [];
 
       if (roomData.players) {
@@ -31,7 +31,7 @@ const Area = ({ x, y, width, height, color, onClick, name, roomData}) => {
           <circle key={index} cx={x+(index+1)*width/(pawnColors.length+1)} cy={y+5} r={3} fill={pawn} />
         ))}
         {cubes.map((cube, index) => {
-          return <rect key={index} x={x+3+index*10} y={y+12} r={3} width={8} height={8} stroke="black" fill={cube} strokeWidth="1"></rect>
+          return <rect onClick={() => cubeClick(cube)} key={index} x={x+3+index*10} y={y+12} r={3} width={8} height={8} stroke="black" fill={cube} strokeWidth="1"></rect>
         })
         }
       </g>

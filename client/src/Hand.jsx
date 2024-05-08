@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import './index.css'; 
 
-const Hand = () => {
+const Hand = ({ roomId, playerName, onClick}) => {
     const [roomData, setRoomData] = useState({});
     const [playerHand, setPlayerHand] = useState([]);
     const [loading, setLoading] = useState(true);
-    const { roomId, name } = useParams();
+    const [ selectedCard, setSelectedCard ] = useState(null);
 
     useEffect(() => {
       const fetchRoomData = async () => {
@@ -21,8 +21,8 @@ const Hand = () => {
               if (response.ok) {
                 const data = await response.json();
                 setRoomData(data);
-                const hand = await fetchPlayerHand(data.players); // Use the renamed function
-                setPlayerHand(hand); // Set the detailed hand
+                const hand = await fetchPlayerHand(data.players); 
+                setPlayerHand(hand); 
                 setLoading(false);
               } else {
                 throw new Error('Failed to fetch room data');
@@ -54,7 +54,7 @@ const Hand = () => {
     
     const fetchPlayerHand = async (players) => {
         if (!players) return [];
-        const player = Object.values(players).find(p => p.name === name);
+        const player = Object.values(players).find(p => p.name === playerName);
         if (!player || !player.hand) return [];
         
         const detailedHand = await Promise.all(player.hand.map(fetchCardDetails));
@@ -64,10 +64,14 @@ const Hand = () => {
     const renderCard = (card) => {
         const imagePath = `/Cards/${card.color}/${card.location}.png`;
         return (
-            <div key={card.id} className="card">
-                <img src={imagePath} alt={card.location} />
-            </div>
-        )
+          <div 
+              key={card.id} 
+              className={`card ${selectedCard === card.id ? 'selected' : ''}`} 
+              onClick={() => onClick(card)}
+          >
+              <img src={imagePath} alt={card.location} />
+          </div>
+      )
     }
 
     if (loading) {
@@ -75,7 +79,7 @@ const Hand = () => {
     }
 
     return (
-        <div className="hand-container">
+        <div className="flex justify-center items-center gap-4">
             {playerHand.length > 0 ? (
                 playerHand.map(renderCard)
             ) : (
