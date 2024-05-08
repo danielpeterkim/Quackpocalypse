@@ -5,3 +5,37 @@
 input, select, textarea{
   color: #ff0000;
 }
+.hand-container {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  overflow-x: auto;
+  padding: 10px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000; 
+  gap: 10px; 
+}
+
+.card {
+  flex: 0 0 auto;
+  transition: transform 0.2s; 
+  cursor: pointer;
+}
+
+.card img {
+  width: 100px; 
+  height: auto;
+  display: block;
+}
+
+.card:hover {
+  transform: scale(1.1); 
+}
+
+
+.main-content {
+  padding-bottom: 150px; 
+}

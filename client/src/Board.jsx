@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import { useParams } from 'react-router-dom';
 import Area from './Area';
+import Hand from './Hand'; 
 import './index.css'
 // import Chat from './Chat';
 
@@ -171,6 +172,7 @@ const Board = () => {
 
     return (
       // Using Tailwind classes to control maximum size and responsiveness
+      <div className="main-content">
       <div className="min-h-screen bg-gray-800 flex justify-center items-center">
       <div className="w-full h-full max-w-4xl max-h-3xl mx-auto">
       {error && <p className="text-red-600">{error}</p>}
@@ -220,6 +222,11 @@ const Board = () => {
           Discover a Cure
         </button>
       </div>
+      </div>
+
+
+
+      <Hand roomId={roomId} playerName={name} />
 
           {/* <button
             onClick={handleToggleChat}

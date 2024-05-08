@@ -2,6 +2,7 @@ import express from 'express';
 import { createRoom, joinRoom, findRoom, startGame } from "../db/roomModule.js";
 import { getRoomData } from "../db/roomModule.js";
 import { takeAction } from '../db/gameModule.js';
+import  { getCard} from '../db/cardsModule.js';
 
 const router = express.Router();
 
@@ -64,6 +65,19 @@ router.post('/take-action', async(req,res) => {
     res.status(400).json({ error: error.message });
   }
 })
+router.get('/get-card', async (req, res) => {
+  const { deckType, cardId } = req.query;
+  try {
+      const card = await getCard(deckType, parseInt(cardId));
+      if (card) {
+          res.json(card);
+      } else {
+          res.status(404).json({ error: "Card not found" });
+      }
+  } catch (error) {
+      res.status(400).json({ error: error.message });
+  }
+});
 
 const setupRoutes = (app) => {
   app.use("/", router);
