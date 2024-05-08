@@ -39,3 +39,11 @@ input, select, textarea{
 .main-content {
   padding-bottom: 150px; 
 }
+
+.research-station {
+  width: 200px;
+  height: 200px;
+  background: white;
+  transform: perspective(10px) rotateX(1deg);
+  margin: 50px;
+}

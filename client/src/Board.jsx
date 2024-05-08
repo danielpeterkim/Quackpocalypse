@@ -447,7 +447,9 @@ const discardCard = async () => {
               />
             ))}
          <text x="40" y="540" fill="black" fontSize="20">Outbreaks: {outbreaks}</text>
-        <text x="610" y="540" fill="black" fontSize="20">Player {roomData.players[currentTurn].name}'s Turn</text>
+         <text x="610" y="540" fill={roomData.players[currentTurn].pawnColor} fontSize="20">
+         Player {roomData.players[currentTurn].name}'s Turn
+         </text>
          {/* <text x="610" y="540" fill="black" fontSize="20">Player {playerTurn}'s Turn</text> */}
           </svg>
 
