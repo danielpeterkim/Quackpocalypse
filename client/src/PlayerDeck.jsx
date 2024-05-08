@@ -9,10 +9,10 @@ const PlayerDeck = ({ playerId, roomId }) => {
         setLoading(true);
         setError('');
         try {
-            const response = await fetch('http://localhost:3000/draw-card',{
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ playerId, roomId })
+            const response = await fetch("http://localhost:3000/draw-card", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ playerId, roomId }),
             });
             if (!response.ok){
                 const data = await response.json();
