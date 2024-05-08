@@ -315,7 +315,9 @@ const actionDirectFlight = async (playerId, roomId, cardIndex) => {
         const roomData = await checkPlayer(playerId, roomId);
         const playerData = roomData.players[playerId];
         const playerHand = playerData.hand;
-        const selectedCard = await getCard("player", playerHand[cardIndex]);
+        //(playerHand[cardIndex]); this was undefined 
+        const selectedCard = await getCard("player", cardIndex);
+        // console.log(selectedCard);
         if (selectedCard.type !== "location") {
             throw new Error("You can only fly to locations!");
         }

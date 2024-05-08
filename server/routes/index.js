@@ -59,7 +59,6 @@ router.post('/take-action', async(req,res) => {
     const {playerId, roomId, args} = req.body;
     // console.log(playerId);
     // console.log(roomId);
-    // console.log(args);
     await takeAction(playerId, roomId, args);
   } catch (error){ 
     res.status(400).json({ error: error.message });

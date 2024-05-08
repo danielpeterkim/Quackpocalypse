@@ -103,12 +103,7 @@ const playerDeck = [
     {id: 45, type: 'location', location: 'Lodge', color: 'red'},
     {id: 46, type: 'location', location: 'Tennis Courts', color: 'red'},
     {id: 47, type: 'location', location: 'Skate Park', color: 'red'},
-    {id: 48, type: 'location', location: 'Castle Point Lot', color: 'red'},
-    { id: 49, type: "event", name: "Airlift" },
-    { id: 50, type: "event", name: "Government Grant" },
-    { id: 51, type: "event", name: "One Quiet Night" },
-    { id: 52, type: "event", name: "Resilient Population" },
-    { id: 53, type: "event", name: "Forecast" },
+    {id: 48, type: 'location', location: 'Castle Point Lot', color: 'red'}
 ];
 
 const createDecks = async () => {

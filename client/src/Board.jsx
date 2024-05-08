@@ -58,7 +58,8 @@ const Board = () => {
       try {
           // console.log(getPlayerId(roomData.players));
           // console.log(roomId);
-          // console.log(args);
+          console.log(args);
+          setError('');
           const playerId = getPlayerId(roomData.players);
           if (!playerId) {
               console.error('Player ID not found');
