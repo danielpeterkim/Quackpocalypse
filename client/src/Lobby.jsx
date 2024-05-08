@@ -10,7 +10,7 @@ function Lobby() {
     const { roomId } = useParams();
     let [error, setError] = useState(''); 
     const { name } = useParams();
- 
+    let refreshInterval = 5000; //5 second refresh
     useEffect(() => {
         const handleGetRoomData = async () => {
             try {
