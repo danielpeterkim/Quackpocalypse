@@ -13,6 +13,7 @@ const Board = () => {
     const [selectedCard, setSelectedCard] = useState(null);
     const [sharedPlayer, setSharedPlayer] = useState(null);
     const [sharedCard, setSharedCard] = useState(null);
+    const [cureCards, setCureCards] = useState([]);
     const [outbreaks, setOutbreaks] = useState(0);
     const [currentTurn, setCurrentTurn] = useState('');
     // const [playerTurn, setPlayerTurn] = useState(1);
@@ -323,6 +324,15 @@ const discardCard = async () => {
       }
     }
 
+    const discoverCure = () => {
+      if(cureCards.length === 5){
+        takeAction({ action: "cure", cardIndices: cureCards });
+        setCureCards([]);
+      } else {
+        alert("Please click on five of your cards in order before discovering a cure.");
+      }
+    }
+
     const handleToggleChat = () => {
         if (roomData.players && Object.keys(roomData.players).length > 2) {
             setError("Chat is disabled for games of more than 2 players.");
@@ -352,6 +362,7 @@ const discardCard = async () => {
       } else {
         setSelectedCard(card);
         setSharedCard(card);
+        setCureCards(cureCards.push(card.id));
     };
         
     };
@@ -506,7 +517,7 @@ const discardCard = async () => {
                             Share Knowledge
                         </button>
                         <button
-                            onClick={() => takeAction({ action: "cure", cardIds: [0, 1, 2, 3, 5] })}
+                            onClick={() => discoverCure()}
                             className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                         >
                             Discover a Cure
