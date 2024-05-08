@@ -33,7 +33,8 @@ function Lobby() {
                     } else {
                         throw new Error("Player ID not found for the given name");
                     }
-                    if (data.gameStatus == "playing") {
+                    console.log(data.gameStatus);
+                    if (data.gameStatus === "playing") {
                         navigate(`/board/${name}/${roomId}`);
                     }
                 } else {
@@ -66,8 +67,9 @@ function Lobby() {
                 });
                 const data = await response.json();
                 if (response.ok) {
-                    console.log('Room ID:', roomId);
-                    console.log('Player Id starting:' + playerId);
+                    // console.log('Room ID:', roomId);
+                    // console.log('Player Id starting:' + playerId);
+                    setStart(true);
                     navigate(`/board/${name}/${roomId}`);
                 } else {
                     console.log('Room ID:', data.roomId);
@@ -84,6 +86,29 @@ function Lobby() {
         setShowInfo(!showInfo);
     };
 
+    const handleRemove = async (player) => {
+        try {
+            console.log(player);
+            console.log(roomId);
+            const response = await fetch('http://localhost:3000/remove-player', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ creatorId: playerId, userId: player, roomId: roomId })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                console.log('player removed');
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (error) {
+            console.error('Error starting game:', error.message);
+            setError(error.message);
+        }
+    }
+
     return (
         <div className="min-h-screen bg-gray-800 flex justify-center items-center">
             <div className="lobby border-2 border-red-800 rounded-lg p-20 bg-gray-800 text-white">
@@ -93,8 +118,16 @@ function Lobby() {
                     <h3>Code: {roomCode}</h3>
                     <h5>Members: </h5>
                     <ul>
-                        {Object.keys(members).map(playerId => (
-                            <li key={playerId}>{members[playerId].name}</li>
+                        {Object.keys(members).map(memberId => (
+                            <li key={memberId}>{
+                                members[memberId].name} 
+                                <span className="ml-2 text-gray-400">Player {members[memberId].playerNumber}</span>
+                                {members[playerId].playerNumber === 1 && (
+                                    <button className="ml-2 py-1 px-2 bg-red-600 hover:bg-red-700 rounded text-white" onClick={() => handleRemove(memberId)}>Remove</button>
+                                )}
+                            </li>
+                            
+
                         ))}
                     </ul>
                     

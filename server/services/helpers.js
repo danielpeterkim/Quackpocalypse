@@ -74,7 +74,7 @@ const locationsInit = {
 };
 
 const infectionDeckInit = Array.from({ length: 48 }, (_, i) => i + 1);
-const playerDeckInit = Array.from({ length: 53 }, (_, i) => i + 1);
+const playerDeckInit = Array.from({ length: 48 }, (_, i) => i + 1);
 
 export default {
     shuffleArray,

@@ -11,6 +11,7 @@ const Board = () => {
     const [loading, setLoading] = useState(true);
     const [location, setLocation] = useState('');
     const [selectedCard, setSelectedCard] = useState(null);
+    const [outbreaks, setOutbreaks] = useState(0);
     const [color, setColor] = useState('');
     const [error, setError] = useState('');
     const { roomId } = useParams();
@@ -31,6 +32,7 @@ const Board = () => {
                 const data = await response.json();
                 if (response.ok) {
                     setRoomData(data);
+                    setOutbreaks(data.outbreakCounter);
                     setLoading(false);
                 } else {
                     throw new Error(data.error);
@@ -120,7 +122,6 @@ const Board = () => {
       if (selectedCard) {
         takeAction({ action: action, index: selectedCard.id });
         setSelectedCard(null);
-        setColor('');
       } else {
           alert('Please choose a card in your deck before flying.');
       }
@@ -238,6 +239,7 @@ const Board = () => {
                 cubeClick={handleCubeClick}
               />
             ))}
+         <text x="40" y="540" fill="black" fontSize="20">Outbreaks: {outbreaks}</text>
           </svg>
 
       
