@@ -115,9 +115,12 @@ const drawPlayerCards = async (playerId, roomId) => {
             await endGame(roomId, "Lost");
             throw new Error("Not enough player cards to draw");
         }
-        if (roomData.players[playerId].drewCards === true) {
+        if (roomData.players[playerId].drewCards === true){
             throw new Error("Player has already drawn cards this turn");
         }
+        if (roomData.players[playerId].actionsRemaining != 0){
+            throw new Error("Player still has actions left to use");
+            }
         const newPlayerCards = playerDeck.splice(0, 2);
         const playerCards = roomData.players[playerId].hand.concat(newPlayerCards);
         await updateDoc(room, {

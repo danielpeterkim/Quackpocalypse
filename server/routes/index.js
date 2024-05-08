@@ -80,7 +80,7 @@ router.get('/get-card', async (req, res) => {
 });
 
 router.post("/draw-card", async (req, res) => {
-    const { playerId, roomId } = req.body;
+    const {playerId, roomId} = req.body;
     try {
         await drawPlayerCards(playerId, roomId);
     } catch (error) {
