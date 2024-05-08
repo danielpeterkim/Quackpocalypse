@@ -13,7 +13,7 @@ const Board = () => {
     const [selectedCard, setSelectedCard] = useState(null);
     const [outbreaks, setOutbreaks] = useState(0);
     const [playerTurn, setPlayerTurn] = useState(1);
-    const [playerNum, setPlayerNum] = useState(0);
+    const [selectedPlayer, setSelectedPlayer] = useState(null);
     const [color, setColor] = useState('');
     const [error, setError] = useState('');
     const { roomId } = useParams();
@@ -224,6 +224,14 @@ const Board = () => {
       target.style = 3;
     }
   
+    const showHand = (playerName) => {
+      return <Hand roomId={roomId} playerName={playerName} onClick={handleCardClick} />;
+  };
+
+
+  const handlePlayerHandClick = (playerName) => {
+      setSelectedPlayer(playerName);
+  };
     // const handleActionClick = (btn, actionName) => {
     //   alert(`Clicked on ${actionName}`);
     // }
@@ -291,6 +299,26 @@ const Board = () => {
 
 
       <Hand roomId={roomId} playerName={name} onClick={handleCardClick}/>
+      {selectedPlayer && (
+          <div>
+              <h2>{selectedPlayer}'s Hand</h2>
+              {showHand(selectedPlayer)}
+          </div>
+      )}
+      <div className="player-hands">
+          {Object.values(roomData.players).map((player) => (
+              player.name !== name && (
+                  <button
+                      key={player.name}
+                      onClick={() => handlePlayerHandClick(player.name)}
+                      className="cursor-pointer bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-xs"
+                  >
+                      {player.name}'s Hand
+                  </button>
+              )
+          ))}
+      </div>
+
       <PlayerDeck roomId={roomId} playerId={getPlayerId(roomData.players)}/>
       </div>
 
