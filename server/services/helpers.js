@@ -16,9 +16,9 @@ const generateRoomCode = () => {
 
 const diseaseCubeInit = {
     red: 0,
-    yellow: 0,
+    green: 0,
     blue: 0,
-    black: 0,
+    purple: 0,
 };
 
 // SUBJECT TO CHANGE

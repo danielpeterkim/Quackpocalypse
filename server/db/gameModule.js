@@ -100,25 +100,27 @@ const resolveEpidemic = async (playerId, roomId) => {
         let infectionDeck = roomData.infectionDeck;
         let infectionDiscard = roomData.infectionDiscard;
         const lastCard = infectionDeck.pop();
-        console.log(lastCard);
+        // console.log(lastCard);
         infectionDiscard.push(lastCard);
         const card = await getCard("infection", lastCard);
-        console.log(card);
+        // console.log(card);
         const location = card.location;
         const color = card.color;
-        playerHand = playerHand.filter((card) => card !== "epidemic");
+        // playerHand = playerHand.filter((card) => card !== "epidemic");
         if (roomData.cureMarkers[color] === false) {
-            const locationObject = roomData.locations;
-            let locationDisease = locationObject[location].diseaseCubes[color];
-            if (locationDisease === 1) {
-                await Outbreak(location, color, locationObject);
+            let locationObject = roomData.locations;
+            if (locationObject[location].diseaseCubes[color] > 0) {
+                console.log("outbreak occurred");
+                locationObject[location].diseaseCubes[color] = 3;
+                locationObject = await Outbreak(location, color, locationObject);
+                // console.log(locationObject);
             } else {
-                locationDisease = 3;
+                locationObject[location].diseaseCubes[color] = 3;
             }
-            console.log(locationDisease);
+            // console.log(locationDisease);
             await updateDoc(room, {
                 infectionRate: roomData.infectionRate + 1,
-                [`locations.${location}.diseaseCubes.${color}`]: locationDisease,
+                locations: locationObject,
                 infectionDeck: infectionDeck,
                 infectionDiscard: infectionDiscard,
                 [`players.${playerId}.hand`]: playerHand,
@@ -134,10 +136,26 @@ const resolveEpidemic = async (playerId, roomId) => {
     }
 };
 
-const Outbreak = async (location, color, locationObject) => {
-    // ! TO DO
+const Outbreak = async (location, color, locationObject, outbreakChain = new Set()) => {
     try {
+        outbreakChain.add(location);
+        console.log(outbreakChain);
+        const adjacentLocations = locationObject[location].adjacent;
+        for (const adjacentLocation of adjacentLocations) {
+            if (outbreakChain.has(adjacentLocation)) {
+                continue;
+            } else {
+                if (locationObject[adjacentLocation].diseaseCubes[color] < 3) {
+                    locationObject[adjacentLocation].diseaseCubes[color] += 1;
+                    console.log(locationObject[adjacentLocation].diseaseCubes[color]);
+                } else {
+                    locationObject = await Outbreak(adjacentLocation, color, locationObject, outbreakChain);
+                }
+            }
+        }
+        return locationObject;
     } catch (error) {
+        throw new Error("Error Outbreaking: " + error.message);
     }
 };
 
@@ -179,7 +197,7 @@ const discardPlayerCards = async (playerId, roomId, cards) => {
 
 const takeAction = async(playerId, roomId, args) => {
     let playerData;
-    try{
+    try {
         const room = doc(db, "rooms", roomId);
         const roomData = await checkPlayer(playerId, roomId);
         playerData = roomData.players[playerId];
@@ -197,7 +215,7 @@ const takeAction = async(playerId, roomId, args) => {
     if (args.action === "cure") return await actionDiscoverCure(playerId, roomId, args.cardIndices);
 
     throw new Error("Action not found");
-}
+};
 
 const actionDrive = async (playerId, roomId, newLocation) => {
     try {
@@ -235,12 +253,12 @@ const actionDirectFlight = async (playerId, roomId, cardIndex) => {
         await updateDoc(room, {
             [`players.${playerId}.location`]: newLocation,
             [`players.${playerId}.actionsRemaining`]: actionsRemaining,
-            [`players.${playerId}.hand`]: playerHand
+            [`players.${playerId}.hand`]: playerHand,
         });
     } catch (error) {
         throw new Error("Error Flying Player: " + error.message);
     }
-}
+};
 
 const actionCharterFlight = async (playerId, roomId, newLocation) => {
     try {
@@ -254,20 +272,20 @@ const actionCharterFlight = async (playerId, roomId, newLocation) => {
         if (!playerHand.includes(currentLocationId)) {
             throw new Error("You do not have your own location card in hand!");
         }
-        
+
         const newHand = playerHand.splice(playerHand.indexOf(currentLocationId), 1);
         let actionsRemaining = roomData.players[playerId].actionsRemaining - 1;
         await updateDoc(room, {
             [`players.${playerId}.location`]: newLocation,
             [`players.${playerId}.actionsRemaining`]: actionsRemaining,
-            [`players.${playerId}.hand`]: playerHand
+            [`players.${playerId}.hand`]: playerHand,
         });
     } catch (error) {
         throw new Error("Error Flying Player: " + error.message);
     }
-}
+};
 
-const actionShuttleFlight = async(playerId, roomId, newLocation) => {
+const actionShuttleFlight = async (playerId, roomId, newLocation) => {
     try {
         const room = doc(db, "rooms", roomId);
         const roomData = await checkPlayer(playerId, roomId);
@@ -282,16 +300,14 @@ const actionShuttleFlight = async(playerId, roomId, newLocation) => {
         let actionsRemaining = roomData.players[playerId].actionsRemaining - 1;
         await updateDoc(room, {
             [`players.${playerId}.location`]: newLocation,
-            [`players.${playerId}.actionsRemaining`]: actionsRemaining
+            [`players.${playerId}.actionsRemaining`]: actionsRemaining,
         });
-        
     } catch (error) {
         throw new Error("Error Flying Player: " + error.message);
     }
-    
-}
+};
 
-const actionBuildResearchStation = async(playerId, roomId) => {
+const actionBuildResearchStation = async (playerId, roomId) => {
     try {
         const room = doc(db, "rooms", roomId);
         const roomData = await checkPlayer(playerId, roomId);
@@ -313,28 +329,26 @@ const actionBuildResearchStation = async(playerId, roomId) => {
         await updateDoc(room, {
             [`players.${playerId}.actionsRemaining`]: actionsRemaining,
             [`players.${playerId}.hand`]: playerHand,
-            [`locations.${playerLocation}.researchStation`]: true
+            [`locations.${playerLocation}.researchStation`]: true,
         });
-
-        
     } catch (error) {
         throw new Error("Error Building Research Station: " + error.message);
     }
-}
+};
 
-const actionTreatDisease = async(playerId, roomId, color) => {
+const actionTreatDisease = async (playerId, roomId, color) => {
     try {
         const room = doc(db, "rooms", roomId);
         const roomData = await checkPlayer(playerId, roomId);
         const playerData = roomData.players[playerId];
         const playerLocation = roomData.locations[playerData.location];
 
-        if (!(['black', 'red', 'blue', 'yellow'].includes(color))) {
-            throw new Error("Invalid color!")
+        if (!["black", "red", "blue", "yellow"].includes(color)) {
+            throw new Error("Invalid color!");
         }
 
         if (playerLocation.diseaseCubes[color] <= 0) {
-            throw new Error("There is no disease of that color there!")
+            throw new Error("There is no disease of that color there!");
         }
 
         const diseaseCubes = playerLocation.diseaseCubes;
@@ -342,20 +356,20 @@ const actionTreatDisease = async(playerId, roomId, color) => {
         if (roomData.cureMarkers[color]) {
             diseaseCubes[color] = 0;
         } else {
-            diseaseCubes[color] -= 1
+            diseaseCubes[color] -= 1;
         }
 
-        let actionsRemaining = playerData.actionsRemaining-1
+        let actionsRemaining = playerData.actionsRemaining - 1;
         await updateDoc(room, {
             [`players.${playerId}.actionsRemaining`]: actionsRemaining,
-            [`locations.${playerData.location}.diseaseCubes`]: diseaseCubes
-        })
+            [`locations.${playerData.location}.diseaseCubes`]: diseaseCubes,
+        });
     } catch (error) {
         throw new Error("Error Treating Disease: " + error.message);
     }
-}
+};
 
-const actionShareKnowledge = async(playerId1, roomId, playerId2, cardIndex) => {
+const actionShareKnowledge = async (playerId1, roomId, playerId2, cardIndex) => {
     try {
         const room = doc(db, "rooms", roomId);
         const roomData = await checkPlayer(playerId1, roomId);
@@ -378,19 +392,19 @@ const actionShareKnowledge = async(playerId1, roomId, playerId2, cardIndex) => {
         }
         const newHand2 = player2Hand.push(player1Hand[cardIndex]);
         const newHand1 = player1Hand.splice(cardIndex, 1);
-        
+
         let actionsRemaining = roomData.players[playerId1].actionsRemaining - 1;
         await updateDoc(room, {
             [`players.${playerId1}.actionsRemaining`]: actionsRemaining,
             [`players.${playerId1}.hand`]: player1Hand,
-            [`players.${playerId2}.hand`]: player2Hand
+            [`players.${playerId2}.hand`]: player2Hand,
         });
     } catch (error) {
         throw new Error("Error Sharing Knowledge: " + error.message);
     }
-}
+};
 
-const actionDiscoverCure = async(playerId, roomId, cardIndices) => {
+const actionDiscoverCure = async (playerId, roomId, cardIndices) => {
     try {
         const room = doc(db, "rooms", roomId);
         const roomData = await checkPlayer(playerId, roomId);
@@ -398,32 +412,32 @@ const actionDiscoverCure = async(playerId, roomId, cardIndices) => {
         const playerLocation = playerData.location;
         const playerHand = playerData.hand;
 
-        if (!(roomData.locations[playerLocation].researchStation)) {
-            throw new Error("You must be at a research station!")
+        if (!roomData.locations[playerLocation].researchStation) {
+            throw new Error("You must be at a research station!");
         }
 
         if (cardIndices.length !== 5) {
-            throw new Error("You must use 5 cards!")
+            throw new Error("You must use 5 cards!");
         }
 
         let color;
 
         let newHand = playerHand;
 
-        for (let i=0; i < 5; i++) {
+        for (let i = 0; i < 5; i++) {
             const cardIndex = cardIndices[i];
-            if (cardIndices.slice(0, i).includes(cardIndex)) throw new Error("Duplicate card indices!")
+            if (cardIndices.slice(0, i).includes(cardIndex)) throw new Error("Duplicate card indices!");
             if (cardIndex < 0) throw new Error("Card indices must be positive!");
             if (cardIndex >= playerHand.length) throw new Error("Card index exceeds hand size!");
 
-            const card = await getCard("player", playerHand[cardIndex])
-            if (card.type !== 'location') {
+            const card = await getCard("player", playerHand[cardIndex]);
+            if (card.type !== "location") {
                 throw new Error("Only location cards may be used to discover a cure!");
             }
             if (i === 0) {
                 color = card.color;
             } else if (card.color !== color) {
-                throw new Error("Card colors do not match!")
+                throw new Error("Card colors do not match!");
             }
 
             newHand = newHand.toSpliced(newHand.indexOf(playerHand[cardIndex]), 1);
@@ -437,33 +451,32 @@ const actionDiscoverCure = async(playerId, roomId, cardIndices) => {
         await updateDoc(room, {
             [`players.${playerId}.actionsRemaining`]: actionsRemaining,
             [`players.${playerId}.hand`]: newHand,
-            [`cureMarkers.${color}`]: true
+            [`cureMarkers.${color}`]: true,
         });
-
     } catch (error) {
-        throw new Error("Error Discovering a cure: " + error.message)
+        throw new Error("Error Discovering a cure: " + error.message);
     }
-}
+};
 
-const getDiseaseColors = async(playerId, roomId) => {
+const getDiseaseColors = async (playerId, roomId) => {
     try {
         const room = doc(db, "rooms", roomId);
         const roomData = await checkPlayer(playerId, roomId);
         const playerData = roomData.players[playerId];
         const playerLocation = playerData.location;
-        const colors = []
-        for (const color of ['black', 'blue', 'red', 'yellow']) {
+        const colors = [];
+        for (const color of ["black", "blue", "red", "yellow"]) {
             if (playerLocation.diseaseCubes[color] > 0) {
-                colors.push(color)
+                colors.push(color);
             }
         }
-        return colors
+        return colors;
     } catch (error) {
         throw new Error("Error Getting Disease Colors: " + error.message);
     }
-}
+};
 
-const getLegalActions = async(roomData) => {
+const getLegalActions = async (roomData) => {
     let playerData;
     let playerLocation;
     let playerLocationId;
@@ -473,7 +486,7 @@ const getLegalActions = async(roomData) => {
     try {
         playerData = roomData.players[playerId];
         playerLocation = playerData.location;
-        playerLocationId = await getLocationId(playerLocation)
+        playerLocationId = await getLocationId(playerLocation);
         playerLocationObject = roomData.locations[playerLocation];
         playerPossibleCures = await getPossibleCures(roomId, playerId);
         researchStationLocations = await getResearchStationLocations(roomId);
@@ -483,34 +496,35 @@ const getLegalActions = async(roomData) => {
 
     if (playerData.actionsRemaining <= 0 || roomData.turnOrder[0] !== playerId) {
         return {
-            "drive": false,
-            "directFlight": false,
-            "charterFlight": false,
-            "shuttleFlight": false,
-            "build": false,
-            "treat": false,
-            "share": false,
-            "cure": false
-        }
+            drive: false,
+            directFlight: false,
+            charterFlight: false,
+            shuttleFlight: false,
+            build: false,
+            treat: false,
+            share: false,
+            cure: false,
+        };
     }
-    
 
     return {
-        "drive": true,
-        "directFlight": playerData.hand.length > 0,
-        "charterFlight": playerData.hand.includes(playerLocationId),
-        "shuttleFlight": playerLocationObject.researchStation && researchStationLocations.length > 1,
-        "build": playerData.hand.includes(playerLocationId) && researchStationLocations.length < 6 && 
-            !(playerLocationObject.researchStation),
-        "treat": Object.values(playerLocationObject.diseaseCubes).some(x => x > 0),
-        "share": Object.keys(roomData.players).some(playerId2 =>
-                playerId !== playerId2 && roomData.players[playerId2].location === playerLocation &&
-                (playerData.hand.includes(playerLocationId) || roomData.players[playerId2].hand.includes(playerLocationId))),
-        "cure": playerPossibleCures.length > 0 && playerLocationObject.researchStation
-    }
-}
+        drive: true,
+        directFlight: playerData.hand.length > 0,
+        charterFlight: playerData.hand.includes(playerLocationId),
+        shuttleFlight: playerLocationObject.researchStation && researchStationLocations.length > 1,
+        build: playerData.hand.includes(playerLocationId) && researchStationLocations.length < 6 && !playerLocationObject.researchStation,
+        treat: Object.values(playerLocationObject.diseaseCubes).some((x) => x > 0),
+        share: Object.keys(roomData.players).some(
+            (playerId2) =>
+                playerId !== playerId2 &&
+                roomData.players[playerId2].location === playerLocation &&
+                (playerData.hand.includes(playerLocationId) || roomData.players[playerId2].hand.includes(playerLocationId))
+        ),
+        cure: playerPossibleCures.length > 0 && playerLocationObject.researchStation,
+    };
+};
 
-const getResearchStationLocations = async(roomId) => {
+const getResearchStationLocations = async (roomId) => {
     try {
         const room = doc(db, "rooms", roomId);
         const roomInfo = await getDoc(room);
@@ -518,31 +532,27 @@ const getResearchStationLocations = async(roomId) => {
             throw new Error("Room does not exist");
         }
         const roomData = roomInfo.data();
-        return Object.keys(roomData.locations).filter(location => roomData.locations[location].researchStation);
+        return Object.keys(roomData.locations).filter((location) => roomData.locations[location].researchStation);
     } catch (error) {
         throw new Error("Error fetching Research Station Locations: " + error.message);
     }
-    
-}
+};
 
-const getPossibleCures = async(roomId, playerId) => {
+const getPossibleCures = async (roomId, playerId) => {
     const room = doc(db, "rooms", roomId);
     const roomData = await checkPlayer(playerId, roomId);
     const playerData = roomData.players[playerId];
-    const playerHand = playerData.hand
+    const playerHand = playerData.hand;
 
-    const colors = {'black': 0, 'blue': 0, 'red': 0, 'yellow': 0}
+    const colors = { black: 0, blue: 0, red: 0, yellow: 0 };
     for (const cardId of playerHand) {
-        const card = await getCard("player", cardId)
+        const card = await getCard("player", cardId);
         if (card.type === "location") {
-            colors[card.color] += 1
+            colors[card.color] += 1;
         }
     }
 
-    return Object.keys(colors).filter(color => colors[color] >= 5 && !roomData.cureMarkers[color]);
-}
+    return Object.keys(colors).filter((color) => colors[color] >= 5 && !roomData.cureMarkers[color]);
+};
 
-
-
-export { checkPlayer, endTurn, takeAction, drawPlayerCards, discardPlayerCards, resolveEpidemic, getDiseaseColors, getLegalActions};
-
+export { checkPlayer, endTurn, takeAction, drawPlayerCards, discardPlayerCards, resolveEpidemic, getDiseaseColors, getLegalActions };

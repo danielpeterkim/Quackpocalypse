@@ -41,9 +41,9 @@ const createRoom = async (name, hiddenHands, epidemicCards) => {
             outbreakCounter: 0,
             cureMarkers: {
                 red: false,
-                yellow: false,
+                green: false,
                 blue: false,
-                black: false,
+                purple: false,
             },
             infectionRate: 2,
             gameSettings: {
