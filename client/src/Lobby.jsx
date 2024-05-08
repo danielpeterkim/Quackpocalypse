@@ -48,8 +48,8 @@ function Lobby() {
 
         if (roomId) {
             handleGetRoomData();
-            const intervalId = setInterval(handleGetRoomData, refreshInterval);
-            return () => clearInterval(intervalId); //cleans up and prvents memory leaks
+            // const intervalId = setInterval(handleGetRoomData, refreshInterval);
+            // return () => clearInterval(intervalId); //cleans up and prvents memory leaks
         }
     }, []);
 
@@ -69,7 +69,7 @@ function Lobby() {
                 if (response.ok) {
                     // console.log('Room ID:', roomId);
                     // console.log('Player Id starting:' + playerId);
-                    setStart(true);
+                    // setStart(true);
                     navigate(`/board/${name}/${roomId}`);
                 } else {
                     console.log('Room ID:', data.roomId);
