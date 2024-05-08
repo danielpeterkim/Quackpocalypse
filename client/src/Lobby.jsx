@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 function Lobby() {
     const [roomCode, setRoomCode] = useState('');
     const [showInfo, setShowInfo] = useState(false);
+    const [start, setStart] = useState(false);
     const [members, setMembers] = useState([]);
     const [playerId, setPlayerId] = useState('');
     const navigate = useNavigate();
@@ -31,7 +32,8 @@ function Lobby() {
                     if (plId) {
                         setPlayerId(plId);
                     } else {
-                        throw new Error("Player ID not found for the given name");
+                        //throw new Error("Player ID not found for the given name");
+                        navigate('/error');
                     }
                     console.log(data.gameStatus);
                     if (data.gameStatus === "playing") {
@@ -49,7 +51,7 @@ function Lobby() {
         if (roomId) {
             handleGetRoomData();
             // const intervalId = setInterval(handleGetRoomData, refreshInterval);
-            // return () => clearInterval(intervalId); //cleans up and prvents memory leaks
+            // return () => clearInterval(intervalId);
         }
     }, []);
 
@@ -69,7 +71,6 @@ function Lobby() {
                 if (response.ok) {
                     // console.log('Room ID:', roomId);
                     // console.log('Player Id starting:' + playerId);
-                    // setStart(true);
                     navigate(`/board/${name}/${roomId}`);
                 } else {
                     console.log('Room ID:', data.roomId);
