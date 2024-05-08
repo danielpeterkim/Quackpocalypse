@@ -281,13 +281,13 @@ const takeAction = async (playerId, roomId, args) => {
     }
     if (playerData.actionsRemaining <= 0) throw new Error("Player is out of actions!");
     if (args.action === "drive") return await actionDrive(playerId, roomId, args.location);
-    if (args.action === "directFlight") return await actionDirectFlight(playerId, roomId, args.index);
+    if (args.action === "directFlight") return await actionDirectFlight(playerId, roomId, args.cardId);
     if (args.action === "charterFlight") return await actionCharterFlight(playerId, roomId, args.location);
     if (args.action === "shuttleFlight") return await actionShuttleFlight(playerId, roomId, args.location);
     if (args.action === "build") return await actionBuildResearchStation(playerId, roomId);
     if (args.action === "treat") return await actionTreatDisease(playerId, roomId, args.color);
-    if (args.action === "share") return await actionShareKnowledge(playerId, roomId, args.playerId, args.cardIndex);
-    if (args.action === "cure") return await actionDiscoverCure(playerId, roomId, args.cardIndices);
+    if (args.action === "share") return await actionShareKnowledge(playerId, roomId, args.playerId, args.cardId);
+    if (args.action === "cure") return await actionDiscoverCure(playerId, roomId, args.cardIds);
 
     throw new Error("Action not found");
 };
@@ -312,25 +312,24 @@ const actionDrive = async (playerId, roomId, newLocation) => {
     }
 };
 
-const actionDirectFlight = async (playerId, roomId, cardIndex) => {
+const actionDirectFlight = async (playerId, roomId, cardId) => {
     try {
         const room = doc(db, "rooms", roomId);
         const roomData = await checkPlayer(playerId, roomId);
         const playerData = roomData.players[playerId];
         const playerHand = playerData.hand;
-        //(playerHand[cardIndex]); this was undefined
-        const selectedCard = await getCard("player", cardIndex);
-        // console.log(selectedCard);
+        const selectedCard = await getCard("player", cardId);
         if (selectedCard.type !== "location") {
             throw new Error("You can only fly to locations!");
         }
         const newLocation = selectedCard.location;
-        const newHand = playerHand.splice(cardIndex, 1);
+        const cardIndex = getCardIndex(cardId, playerHand);
+        const newHand = playerHand.toSpliced(cardIndex, 1);
         let actionsRemaining = roomData.players[playerId].actionsRemaining - 1;
         await updateDoc(room, {
             [`players.${playerId}.location`]: newLocation,
             [`players.${playerId}.actionsRemaining`]: actionsRemaining,
-            [`players.${playerId}.hand`]: playerHand,
+            [`players.${playerId}.hand`]: newHand,
         });
     } catch (error) {
         throw new Error("Error Flying Player: " + error.message);
@@ -452,7 +451,7 @@ const actionTreatDisease = async (playerId, roomId, color) => {
     }
 };
 
-const actionShareKnowledge = async (playerId1, roomId, playerId2, cardIndex) => {
+const actionShareKnowledge = async (playerId1, roomId, playerId2, cardId) => {
     try {
         const room = doc(db, "rooms", roomId);
         const roomData = await checkPlayer(playerId1, roomId);
@@ -460,7 +459,28 @@ const actionShareKnowledge = async (playerId1, roomId, playerId2, cardIndex) => 
         const playerData2 = roomData.players[playerId2];
         const player1Hand = playerData1.hand;
         const player2Hand = playerData2.hand;
-        const selectedCard = await getCard("player", player1Hand[cardIndex]);
+
+        let giver;
+        let receiver;
+
+        let cardIndex = getCardIndex(cardId, player1Hand);
+        if (cardIndex === -1) {
+            cardIndex = getCardIndex(player2Hand)
+            giver = playerId2;
+            receiver = playerId1;
+        } else {
+            giver = playerId1;
+            receiver = playerId2;
+        }
+
+        if (cardIndex === -1) {
+            throw new Error("Neither player has that card!")
+        }
+
+        const giverHand = roomData.players[giver].hand;
+        const receiverHand = roomData.player[receiver].hand;
+
+        const selectedCard = await getCard("player", cardId);
         if (selectedCard.type !== "location") {
             throw new Error("You can only share location cards!");
         }
@@ -471,23 +491,24 @@ const actionShareKnowledge = async (playerId1, roomId, playerId2, cardIndex) => 
             throw new Error("You must be in the location matching the given card!");
         }
         if (player2Location !== shareLocation) {
-            throw new Error("The receiving player must be in the location matching the given card!");
+            throw new Error("The selected player must be in the location matching the given card!");
         }
-        const newHand2 = player2Hand.push(player1Hand[cardIndex]);
-        const newHand1 = player1Hand.splice(cardIndex, 1);
+
+        const newGiverHand = giverHand.toSpliced(cardIndex, 1);
+        const newReceiverHand = [...receiverHand, giverHand[cardIndex]];
 
         let actionsRemaining = roomData.players[playerId1].actionsRemaining - 1;
         await updateDoc(room, {
             [`players.${playerId1}.actionsRemaining`]: actionsRemaining,
-            [`players.${playerId1}.hand`]: player1Hand,
-            [`players.${playerId2}.hand`]: player2Hand,
+            [`players.${giver}.hand`]: newGiverHand,
+            [`players.${receiver}.hand`]: newReceiverHand,
         });
     } catch (error) {
         throw new Error("Error Sharing Knowledge: " + error.message);
     }
 };
 
-const actionDiscoverCure = async (playerId, roomId, cardIndices) => {
+const actionDiscoverCure = async (playerId, roomId, cardIds) => {
     try {
         const room = doc(db, "rooms", roomId);
         const roomData = await checkPlayer(playerId, roomId);
@@ -499,7 +520,7 @@ const actionDiscoverCure = async (playerId, roomId, cardIndices) => {
             throw new Error("You must be at a research station!");
         }
 
-        if (cardIndices.length !== 5) {
+        if (cardIds.length !== 5) {
             throw new Error("You must use 5 cards!");
         }
 
@@ -508,12 +529,11 @@ const actionDiscoverCure = async (playerId, roomId, cardIndices) => {
         let newHand = playerHand;
 
         for (let i = 0; i < 5; i++) {
-            const cardIndex = cardIndices[i];
-            if (cardIndices.slice(0, i).includes(cardIndex)) throw new Error("Duplicate card indices!");
-            if (cardIndex < 0) throw new Error("Card indices must be positive!");
-            if (cardIndex >= playerHand.length) throw new Error("Card index exceeds hand size!");
+            const cardId = cardIds[i];
+            if (cardIds.slice(0, i).includes(cardId)) throw new Error("Duplicate cards!");
+            if (cardId < 0) throw new Error("Card ids cannot be negative!");
 
-            const card = await getCard("player", playerHand[cardIndex]);
+            const card = await getCard("player", cardId);
             if (card.type !== "location") {
                 throw new Error("Only location cards may be used to discover a cure!");
             }
@@ -523,7 +543,11 @@ const actionDiscoverCure = async (playerId, roomId, cardIndices) => {
                 throw new Error("Card colors do not match!");
             }
 
-            newHand = newHand.toSpliced(newHand.indexOf(playerHand[cardIndex]), 1);
+            if (!newHand.includes(cardId)) {
+                throw new Error(`Card (id=${cardId}) not found in player's hand!`)
+            }
+
+            newHand = newHand.toSpliced(newHand.indexOf(cardId), 1);
         }
 
         if (roomData.cureMarkers[color]) {
@@ -644,5 +668,9 @@ const getPossibleCures = async (roomId, playerId) => {
 
     return Object.keys(colors).filter((color) => colors[color] >= 5 && !roomData.cureMarkers[color]);
 };
+
+const getCardIndex = (cardId, playerHand) => {
+    return playerHand.findIndex((card) => card.id === cardId);
+}
 
 export { checkPlayer, endTurn, takeAction, drawPlayerCards, discardPlayerCards, resolveEpidemic, getDiseaseColors, getLegalActions };
