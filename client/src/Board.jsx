@@ -46,8 +46,8 @@ const Board = () => {
 
         if (roomId) {
             handleGetRoomData();
-            const intervalId = setInterval(handleGetRoomData, refreshInterval);
-            return () => clearInterval(intervalId); //cleans up and prvents memory leaks
+            // const intervalId = setInterval(handleGetRoomData, refreshInterval);
+            // return () => clearInterval(intervalId); 
         }
     }, []);
 
@@ -79,7 +79,7 @@ const Board = () => {
           const data = await response.json();
           if (response.ok) {
               console.log('Action successfully completed');
-              window.location.reload();
+              // window.location.reload();
           } else {
               throw new Error(data.error);
           }
