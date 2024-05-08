@@ -513,7 +513,7 @@ const actionDiscoverCure = async (playerId, roomId, cardIndices) => {
             if (cardIndex < 0) throw new Error("Card indices must be positive!");
             if (cardIndex >= playerHand.length) throw new Error("Card index exceeds hand size!");
 
-            const card = await getCard("player", playerHand[cardIndex]);
+            const card = await getCard("player", cardIndex);
             if (card.type !== "location") {
                 throw new Error("Only location cards may be used to discover a cure!");
             }
