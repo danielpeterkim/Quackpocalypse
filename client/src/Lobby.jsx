@@ -44,6 +44,8 @@ function Lobby() {
 
         if (roomId) {
             handleGetRoomData();
+            const intervalId = setInterval(handleGetRoomData, refreshInterval);
+            return () => clearInterval(intervalId); //cleans up and prvents memory leaks
         }
     }, []);
 
