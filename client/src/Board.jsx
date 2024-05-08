@@ -12,7 +12,8 @@ const Board = () => {
     const [inputMessage, setInputMessage] = useState("");
     const [selectedCard, setSelectedCard] = useState(null);
     const [outbreaks, setOutbreaks] = useState(0);
-    const [playerTurn, setPlayerTurn] = useState(1);
+    const [currentTurn, setCurrentTurn] = useState('');
+    // const [playerTurn, setPlayerTurn] = useState(1);
     const [selectedPlayer, setSelectedPlayer] = useState(null);
     const [color, setColor] = useState("");
     const [error, setError] = useState("");
@@ -162,6 +163,7 @@ const Board = () => {
                 if (response.ok) {
                     setRoomData(data);
                     setOutbreaks(data.outbreakCounter);
+                    setCurrentTurn(data.turnOrder[0]);
                     setLoading(false);
                 } else {
                     throw new Error(data.error);
@@ -196,8 +198,11 @@ const Board = () => {
               console.error('Player ID not found');
               return;
           }
-          const playerNum = roomData.players[playerId].playerNumber;
-          if(playerNum !== playerTurn){
+          // const playerNum = roomData.players[playerId].playerNumber;
+          // if(playerNum !== playerTurn){
+          //   throw new Error('Please wait your turn');
+          // }
+          if(playerId !== currentTurn){
             throw new Error('Please wait your turn');
           }
           const response = await fetch('http://localhost:3000/take-action', {
@@ -231,11 +236,11 @@ const Board = () => {
         const data = await response.json();
         if(response.ok){
             alert('Turn ended successfully!');
-            if(playerTurn === roomData.players.length){
-              setPlayerTurn(1);
-            } else {
-              setPlayerTurn(playerTurn + 1);
-            }
+            // if(playerTurn === roomData.players.length){
+            //   setPlayerTurn(1);
+            // } else {
+            //   setPlayerTurn(playerTurn + 1);
+            // }
         } else {
             throw new Error(data.error);
         }
@@ -391,6 +396,8 @@ const Board = () => {
               />
             ))}
          <text x="40" y="540" fill="black" fontSize="20">Outbreaks: {outbreaks}</text>
+        <text x="610" y="540" fill="black" fontSize="20">Player {roomData.players[currentTurn].name}'s Turn</text>
+         {/* <text x="610" y="540" fill="black" fontSize="20">Player {playerTurn}'s Turn</text> */}
           </svg>
 
                     <div className="inline-flex rounded-md shadow-sm" role="group">
