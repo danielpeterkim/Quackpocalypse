@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 // const Area = ({ x, y, width, height, color, onClick, name, pawns, cubes }) => (
-const Area = ({ x, y, width, height, color, onClick, name, roomData, cubeClick}) => {
+const Area = ({ x, y, width, height, color, onClick, name, roomData, cubeClick, selectedLocation}) => {
       let pawnColors = [];
 
       if (name == "Babbio") {
@@ -28,9 +28,12 @@ const Area = ({ x, y, width, height, color, onClick, name, roomData, cubeClick})
           }
         }
       }
+
       return(
       <g className="cursor-pointer" onClick={() => onClick(name)}>
         <rect x={x} y={y} width={width} height={height} fill="transparent" stroke={color} strokeWidth="2" />
+        {selectedLocation === name &&
+        <rect x={x-2} y={y-2} width={width+4} height={height+4} fill="transparent" stroke="gold" strokeWidth="2" />}
         {pawnColors.map((pawn, index) => (
           <circle key={index} cx={x+(index+1)*width/(pawnColors.length+1)} cy={y+5} r={3} fill={pawn} />
         ))}

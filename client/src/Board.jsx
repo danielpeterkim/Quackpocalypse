@@ -444,6 +444,7 @@ const discardCard = async () => {
                 name={area.name}
                 roomData={roomData}
                 cubeClick={handleCubeClick}
+                selectedLocation={location}
               />
             ))}
          <text x="40" y="540" fill="black" fontSize="20">Outbreaks: {outbreaks}</text>
