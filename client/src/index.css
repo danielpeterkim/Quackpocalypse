@@ -2,6 +2,12 @@
 @tailwind utilities;
 @tailwind components;
 
+html, body {
+  height: 100%;
+  margin: 0;
+  background-color: #1F2937; /* This is the hex code for Tailwind CSS bg-gray-800 */
+}
+
 input, select, textarea{
   color: #ff0000;
 }
