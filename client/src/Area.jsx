@@ -25,7 +25,7 @@ const Area = ({ x, y, width, height, color, onClick, name, roomData, cubeClick})
         }
       }
       return(
-      <g className="pointer" onClick={() => onClick(name)}>
+      <g className="cursor-pointer" onClick={() => onClick(name)}>
         <rect x={x} y={y} width={width} height={height} fill="transparent" stroke={color} strokeWidth="2" />
         {pawnColors.map((pawn, index) => (
           <circle key={index} cx={x+(index+1)*width/(pawnColors.length+1)} cy={y+5} r={3} fill={pawn} />

@@ -11,6 +11,7 @@ const Board = () => {
     const [location, setLocation] = useState('');
     const [selectedCard, setSelectedCard] = useState(null);
     const [outbreaks, setOutbreaks] = useState(0);
+    const [playerTurn, setPlayerTurn] = useState(0);
     const [color, setColor] = useState('');
     const [error, setError] = useState('');
     const { roomId } = useParams();
@@ -98,6 +99,11 @@ const Board = () => {
         const data = await response.json();
         if(response.ok){
             alert('Turn ended successfully!');
+            if(playerTurn === roomData.players.length){
+              setPlayerTurn(1);
+            } else {
+              setPlayerTurn(playerTurn + 1);
+            }
         } else {
             throw new Error(data.error);
         }
@@ -239,6 +245,7 @@ const Board = () => {
               />
             ))}
          <text x="40" y="540" fill="black" fontSize="20">Outbreaks: {outbreaks}</text>
+         <text x="650" y="540" fill="black" fontSize="20">Player {playerTurn}'s Turn</text>
           </svg>
 
       
