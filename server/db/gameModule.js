@@ -2,6 +2,8 @@ import { db } from "../config/firebase-config.js";
 import { collection, addDoc, serverTimestamp, doc, updateDoc, getDoc, query, where, getDocs } from "firebase/firestore";
 import { getCard, getLocationId } from "./cardsModule.js";
 import { getRoomData } from "./roomModule.js";
+import helpers from "../services/helpers.js";
+const { shuffleArray } = helpers;
 
 const checkPlayer = async (playerId, roomId) => {
     try {
@@ -48,6 +50,40 @@ const endTurn = async (playerId, roomId) => {
         if (roomData.players[playerId].drewCards === false) {
             throw new Error("Player must draw cards before ending turn.");
         }
+        let infectionRate = roomData.infectionRate;
+        let infectionDeck = roomData.infectionDeck;
+        let infectionDiscard = roomData.infectionDiscard;
+        if (infectionRate === 0 || infectionRate === 1 || infectionRate === 2) {
+            realInfectionRate = 2;
+        } else if (infectionRate === 3 || infectionRate === 4) {
+            realInfectionRate = 3;
+        } else {
+            realInfectionRate = 4;
+        }
+        for (let i = 0; i < realInfectionRate; i++) {
+            const card = infectionDeck.shift();
+            infectionDiscard.push(card);
+            const cardData = await getCard("infection", card);
+            const location = cardData.location;
+            const color = cardData.color;
+            let outBreakCounterValue = roomData.outbreakCounter;
+            if (roomData.eradicationMarkers[color] === false) {
+                let locationObject = roomData.locations;
+                if ((locationObject[location].diseaseCubes[color] = 3)) {
+                    console.log("outbreak occurred");
+                    [locationObject, outBreakCounterValue] = await Outbreak(location, color, locationObject, outBreakCounterValue);
+                    // console.log(locationObject);
+                } else {
+                    locationObject[location].diseaseCubes[color] += 1;
+                }
+                let totalCubes = Object.values(locationObject).reduce((total, location) => total + location.diseaseCubes[color], 0);
+                if (totalCubes >= 24) {
+                    await endGame(roomId, "Lost");
+                    throw new Error("Game Lost: Too many disease cubes of one color");
+                }
+            }
+        }
+
         const nextPlayer = turnOrder.shift();
         turnOrder.push(nextPlayer);
         const actionsRemaining = 4;
@@ -55,6 +91,10 @@ const endTurn = async (playerId, roomId) => {
             turnOrder: turnOrder,
             [`players.${playerId}.actionsRemaining`]: actionsRemaining,
             [`players.${playerId}.drewCards`]: false,
+            infectionDeck: infectionDeck,
+            infectionDiscard: infectionDiscard,
+            outbreakCounter: outBreakCounterValue,
+            locations: locationObject,
         });
     } catch (error) {
         throw new Error("Error Ending Turn: " + error.message);
@@ -71,8 +111,8 @@ const drawPlayerCards = async (playerId, roomId) => {
         const roomData = roomInfo.data();
         const playerDeck = roomData.playerDeck;
         if (playerDeck.length < 2) {
-            throw new Error("Not enough cards in player deck");
-            // ! END GAME, THEY LOSE
+            await endGame(roomId, "Lost");
+            throw new Error("Not enough player cards to draw");
         }
         if (roomData.players[playerId].drewCards === true) {
             throw new Error("Player has already drawn cards this turn");
@@ -89,6 +129,21 @@ const drawPlayerCards = async (playerId, roomId) => {
     }
 };
 
+const endGame = async (roomId, result) => {
+    try {
+        const room = doc(db, "rooms", roomId);
+        const roomInfo = await getDoc(room);
+        if (!roomInfo.exists()) {
+            throw new Error("Room does not exist");
+        }
+        await updateDoc(room, {
+            gameStatus: result,
+        });
+    } catch (error) {
+        throw new Error("Error Ending Game: " + error.message);
+    }
+};
+
 const resolveEpidemic = async (playerId, roomId) => {
     try {
         const room = doc(db, "rooms", roomId);
@@ -99,29 +154,40 @@ const resolveEpidemic = async (playerId, roomId) => {
         }
         let infectionDeck = roomData.infectionDeck;
         let infectionDiscard = roomData.infectionDiscard;
+        let outBreakCounterValue = roomData.outbreakCounter;
         const lastCard = infectionDeck.pop();
         // console.log(lastCard);
         infectionDiscard.push(lastCard);
+        shuffleArray(infectionDiscard);
+        infectionDeck = infectionDiscard.concat(infectionDeck);
+        infectionDiscard = [];
         const card = await getCard("infection", lastCard);
         // console.log(card);
         const location = card.location;
         const color = card.color;
-        // playerHand = playerHand.filter((card) => card !== "epidemic");
-        if (roomData.cureMarkers[color] === false) {
+        playerHand = playerHand.filter((card) => card !== "epidemic");
+        if (roomData.eradicationMarkers[color] === false) {
             let locationObject = roomData.locations;
             if (locationObject[location].diseaseCubes[color] > 0) {
                 console.log("outbreak occurred");
                 locationObject[location].diseaseCubes[color] = 3;
-                locationObject = await Outbreak(location, color, locationObject);
+                [locationObject, outBreakCounterValue] = await Outbreak(location, color, locationObject, outBreakCounterValue);
                 // console.log(locationObject);
             } else {
                 locationObject[location].diseaseCubes[color] = 3;
+            }
+            // if total num of cubes of a color is 24, game is lost
+            let totalCubes = Object.values(locationObject).reduce((total, location) => total + location.diseaseCubes[color], 0);
+            if (totalCubes >= 24) {
+                await endGame(roomId, "Lost");
+                throw new Error("Game Lost: Too many disease cubes of one color");
             }
             // console.log(locationDisease);
             await updateDoc(room, {
                 infectionRate: roomData.infectionRate + 1,
                 locations: locationObject,
                 infectionDeck: infectionDeck,
+                outbreakCounter: outBreakCounterValue,
                 infectionDiscard: infectionDiscard,
                 [`players.${playerId}.hand`]: playerHand,
             });
@@ -136,11 +202,16 @@ const resolveEpidemic = async (playerId, roomId) => {
     }
 };
 
-const Outbreak = async (location, color, locationObject, outbreakChain = new Set()) => {
+const Outbreak = async (location, color, locationObject, outBreakCounterValue, outbreakChain = new Set()) => {
     try {
         outbreakChain.add(location);
         console.log(outbreakChain);
         const adjacentLocations = locationObject[location].adjacent;
+        outBreakCounterValue += 1;
+        if (outBreakCounterValue >= 8) {
+            await endGame(roomId, "Lost");
+            throw new Error("Game Lost: Too many outbreaks");
+        }
         for (const adjacentLocation of adjacentLocations) {
             if (outbreakChain.has(adjacentLocation)) {
                 continue;
@@ -153,7 +224,7 @@ const Outbreak = async (location, color, locationObject, outbreakChain = new Set
                 }
             }
         }
-        return locationObject;
+        return [locationObject, outBreakCounterValue];
     } catch (error) {
         throw new Error("Error Outbreaking: " + error.message);
     }
@@ -195,7 +266,7 @@ const discardPlayerCards = async (playerId, roomId, cards) => {
     }
 };
 
-const takeAction = async(playerId, roomId, args) => {
+const takeAction = async (playerId, roomId, args) => {
     let playerData;
     try {
         const room = doc(db, "rooms", roomId);
@@ -342,8 +413,9 @@ const actionTreatDisease = async (playerId, roomId, color) => {
         const roomData = await checkPlayer(playerId, roomId);
         const playerData = roomData.players[playerId];
         const playerLocation = roomData.locations[playerData.location];
+        const eradicationMarkers = roomData.eradicationMarkers;
 
-        if (!["black", "red", "blue", "yellow"].includes(color)) {
+        if (!["purple", "red", "blue", "green"].includes(color)) {
             throw new Error("Invalid color!");
         }
 
@@ -355,6 +427,10 @@ const actionTreatDisease = async (playerId, roomId, color) => {
 
         if (roomData.cureMarkers[color]) {
             diseaseCubes[color] = 0;
+            const isEradicated = Object.values(roomData.locations).every((location) => location.diseaseCubes[color] === 0);
+            if (isEradicated) {
+                eradicationMarkers[color] = true;
+            }
         } else {
             diseaseCubes[color] -= 1;
         }
@@ -363,6 +439,7 @@ const actionTreatDisease = async (playerId, roomId, color) => {
         await updateDoc(room, {
             [`players.${playerId}.actionsRemaining`]: actionsRemaining,
             [`locations.${playerData.location}.diseaseCubes`]: diseaseCubes,
+            eradicationMarkers: eradicationMarkers,
         });
     } catch (error) {
         throw new Error("Error Treating Disease: " + error.message);
@@ -446,12 +523,19 @@ const actionDiscoverCure = async (playerId, roomId, cardIndices) => {
         if (roomData.cureMarkers[color]) {
             throw new Error("The cure for that color already exists!");
         }
+        let cureMarkers = roomData.cureMarkers;
+        cureMarkers[color] = true;
+
+        if (Object.values(cureMarkers).every((cure) => cure)) {
+            await endGame(roomId, "Won");
+            throw new Error("Game Won: All cures discovered!");
+        }
 
         let actionsRemaining = roomData.players[playerId].actionsRemaining - 1;
         await updateDoc(room, {
             [`players.${playerId}.actionsRemaining`]: actionsRemaining,
             [`players.${playerId}.hand`]: newHand,
-            [`cureMarkers.${color}`]: true,
+            cureMarkers: cureMarkers,
         });
     } catch (error) {
         throw new Error("Error Discovering a cure: " + error.message);
@@ -465,7 +549,7 @@ const getDiseaseColors = async (playerId, roomId) => {
         const playerData = roomData.players[playerId];
         const playerLocation = playerData.location;
         const colors = [];
-        for (const color of ["black", "blue", "red", "yellow"]) {
+        for (const color of ["purple", "blue", "red", "green"]) {
             if (playerLocation.diseaseCubes[color] > 0) {
                 colors.push(color);
             }
@@ -544,7 +628,7 @@ const getPossibleCures = async (roomId, playerId) => {
     const playerData = roomData.players[playerId];
     const playerHand = playerData.hand;
 
-    const colors = { black: 0, blue: 0, red: 0, yellow: 0 };
+    const colors = { purple: 0, blue: 0, red: 0, green: 0 };
     for (const cardId of playerHand) {
         const card = await getCard("player", cardId);
         if (card.type === "location") {
