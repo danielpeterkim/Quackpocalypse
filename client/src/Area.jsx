@@ -4,6 +4,10 @@ import React, { useState, useEffect } from 'react';
 const Area = ({ x, y, width, height, color, onClick, name, roomData, cubeClick}) => {
       let pawnColors = [];
 
+      if (name == "Babbio") {
+        console.log(roomData.locations[name].researchStation);
+      }
+
       if (roomData.players) {
         for (const player of Object.values(roomData.players)) {
           if (player.location === name) {
@@ -33,6 +37,9 @@ const Area = ({ x, y, width, height, color, onClick, name, roomData, cubeClick})
         {cubes.map((cube, index) => {
           return <rect onClick={() => cubeClick(cube)} key={index} x={x+3+index*10} y={y+12} r={3} width={8} height={8} stroke="black" fill={cube} strokeWidth="1"></rect>
         })
+        }
+        {roomData.locations[name].researchStation &&
+        <rect x={x-width/6} y={y-width/6} width={width/3} height={width/3} fill="white" stroke="black" strokeWidth="1"/>
         }
       </g>
     );
