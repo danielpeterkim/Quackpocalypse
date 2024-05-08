@@ -61,15 +61,15 @@ const endTurn = async (playerId, roomId) => {
         } else {
             realInfectionRate = 4;
         }
+        let outBreakCounterValue = roomData.outbreakCounter;
+        let locationObject = roomData.locations;
         for (let i = 0; i < realInfectionRate; i++) {
             const card = infectionDeck.shift();
             infectionDiscard.push(card);
             const cardData = await getCard("infection", card);
             const location = cardData.location;
             const color = cardData.color;
-            let outBreakCounterValue = roomData.outbreakCounter;
             if (roomData.eradicationMarkers[color] === false) {
-                let locationObject = roomData.locations;
                 if ((locationObject[location].diseaseCubes[color] = 3)) {
                     console.log("outbreak occurred");
                     [locationObject, outBreakCounterValue] = await Outbreak(location, color, locationObject, outBreakCounterValue);
@@ -84,7 +84,7 @@ const endTurn = async (playerId, roomId) => {
                 }
             }
         }
-
+        console.log(outBreakCounterValue);
         const nextPlayer = turnOrder.shift();
         turnOrder.push(nextPlayer);
         const actionsRemaining = 4;
@@ -115,12 +115,12 @@ const drawPlayerCards = async (playerId, roomId) => {
             await endGame(roomId, "Lost");
             throw new Error("Not enough player cards to draw");
         }
-        if (roomData.players[playerId].drewCards === true){
+        if (roomData.players[playerId].drewCards === true) {
             throw new Error("Player has already drawn cards this turn");
         }
-        if (roomData.players[playerId].actionsRemaining != 0){
+        if (roomData.players[playerId].actionsRemaining != 0) {
             throw new Error("Player still has actions left to use");
-            }
+        }
         const newPlayerCards = playerDeck.splice(0, 2);
         const playerCards = roomData.players[playerId].hand.concat(newPlayerCards);
         await updateDoc(room, {
@@ -209,7 +209,7 @@ const resolveEpidemic = async (playerId, roomId) => {
 const Outbreak = async (location, color, locationObject, outBreakCounterValue, outbreakChain = new Set()) => {
     try {
         outbreakChain.add(location);
-        console.log(outbreakChain);
+        // console.log(outbreakChain);
         const adjacentLocations = locationObject[location].adjacent;
         outBreakCounterValue += 1;
         if (outBreakCounterValue >= 8) {
@@ -222,7 +222,7 @@ const Outbreak = async (location, color, locationObject, outBreakCounterValue, o
             } else {
                 if (locationObject[adjacentLocation].diseaseCubes[color] < 3) {
                     locationObject[adjacentLocation].diseaseCubes[color] += 1;
-                    console.log(locationObject[adjacentLocation].diseaseCubes[color]);
+                    // console.log(locationObject[adjacentLocation].diseaseCubes[color]);
                 } else {
                     locationObject = await Outbreak(adjacentLocation, color, locationObject, outbreakChain);
                 }
@@ -258,10 +258,10 @@ const discardPlayerCards = async (playerId, roomId, cards) => {
         if (cards.some((card) => !playerHand.includes(card))) {
             throw new Error("Player does not have one or more of the cards to discard");
         }
-        console.log(playerHand);
-        console.log(cards);
+        // console.log(playerHand);
+        // console.log(cards);
         const newHand = playerHand.filter((card) => !cards.includes(card));
-        console.log(newHand);
+        // console.log(newHand);
         await updateDoc(room, {
             [`players.${playerId}.hand`]: newHand,
         });
@@ -318,7 +318,7 @@ const actionDirectFlight = async (playerId, roomId, cardIndex) => {
         const roomData = await checkPlayer(playerId, roomId);
         const playerData = roomData.players[playerId];
         const playerHand = playerData.hand;
-        //(playerHand[cardIndex]); this was undefined 
+        //(playerHand[cardIndex]); this was undefined
         const selectedCard = await getCard("player", cardIndex);
         // console.log(selectedCard);
         if (selectedCard.type !== "location") {
