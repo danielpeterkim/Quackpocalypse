@@ -37,8 +37,8 @@ const Hand = ({ roomId, playerName, onClick}) => {
 
       if (roomId) {
         fetchRoomData();
-        const intervalId = setInterval(fetchRoomData, refreshInterval);
-        return () => clearInterval(intervalId); //cleans up and prevents memory leaks
+        // const intervalId = setInterval(fetchRoomData, refreshInterval);
+        // return () => clearInterval(intervalId); //cleans up and prevents memory leaks
       }
     }, [roomId, playerHand]); 
 
