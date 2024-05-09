@@ -89,6 +89,9 @@ const endTurn = async (playerId, roomId) => {
             }
         }
         console.log(outBreakCounterValue);
+        if (outBreakCounterValue >= 8) {
+            await endGame(roomId, "Lost");
+        }
         const nextPlayer = turnOrder.shift();
         turnOrder.push(nextPlayer);
         const actionsRemaining = 4;
@@ -184,9 +187,6 @@ const resolveEpidemic = async (playerId, roomId) => {
             // if total num of cubes of a color is 24, game is lost
             let totalCubes = Object.values(locationObject).reduce((total, location) => total + location.diseaseCubes[color], 0);
             if (totalCubes >= 24) {
-                await endGame(roomId, "Lost");
-            }
-            if (outBreakCounterValue >= 8) {
                 await endGame(roomId, "Lost");
             }
             // console.log(locationDisease);
