@@ -224,7 +224,7 @@ const startGame = async (userId, roomId) => {
         // deal cards, randomly assign roles, and determine turn order
         const roles = ["Dispatcher", "Medic", "Scientist", "Researcher", "Operations Expert", "Contingency Planner"];
         shuffleArray(roles);
-        const pawnColors = ["red", "blue", "yellow", "brown", "black", "orange"];
+        const pawnColors = ["red", "blue", "#FF8C00", "brown", "black", "orange"];
         shuffleArray(pawnColors);
         let cardsPerPlayer = 0;
         const playerCount = Object.keys(roomData.players).length;

@@ -22,9 +22,9 @@ const checkPlayer = async (playerId, roomId) => {
         // if (roomData.turnOrder[0] !== playerId) {
         //     throw new Error("Not player's turn");
         // }
-        if (roomData.players[playerId].actionsRemaining < 1) {
-            throw new Error("No actions left");
-        }
+        // if (roomData.players[playerId].actionsRemaining < 1) {
+        //     throw new Error("No actions left");
+        // }
         return roomData;
     } catch (error) {
         throw new Error(error.message);
@@ -33,6 +33,7 @@ const checkPlayer = async (playerId, roomId) => {
 
 const endTurn = async (playerId, roomId) => {
     try {
+        await resolveEpidemic(playerId, roomId);
         const room = doc(db, "rooms", roomId);
         const roomInfo = await getDoc(room);
         if (!roomInfo.exists()) {
@@ -155,7 +156,7 @@ const resolveEpidemic = async (playerId, roomId) => {
         const roomData = await checkPlayer(playerId, roomId);
         let playerHand = roomData.players[playerId].hand;
         if (!playerHand.includes("epidemic")) {
-            throw new Error("Player does not have an epidemic card to resolve");
+            return;
         }
         let infectionDeck = roomData.infectionDeck;
         let infectionDiscard = roomData.infectionDiscard;
