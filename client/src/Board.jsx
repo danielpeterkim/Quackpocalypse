@@ -288,11 +288,19 @@ const discardCard = async () => {
 }
 
     const chooseLoc = (action) => {
+      if(action === "charterFlight"){
+        if(!selectedCard){
+          alert('select a card to discard');
+        }
+        if(selectedCard.location !== roomData.players[getPlayerId(roomData.players)].location){
+          alert("You must be in the location of the card you want to use");
+        } 
+      }
         if (location) {
             takeAction({ action: action, location: location });
             setLocation("");
         } else {
-            alert("Please click on an adjacent location before walking.");
+            alert("Please click on an adjacent location before moving.");
         }
     };
 
@@ -498,7 +506,7 @@ const discardCard = async () => {
                         <button onClick={() => chooseCard("directFlight")} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                             Direct Shuttle
                         </button>
-                        <button onClick={() => chooseCard("charterFlight")} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        <button onClick={() => chooseLoc("charterFlight")} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                             Charter Shuttle
                         </button>
                         <button onClick={() => chooseLoc("shuttleFlight")} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
