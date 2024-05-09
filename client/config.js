@@ -1,0 +1,1 @@
+export const API_URL = import.meta.env.MODE === 'prod' ? '' : 'http://localhost:3000'; 
