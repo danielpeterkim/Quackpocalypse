@@ -242,7 +242,7 @@ const Outbreak = async (location, color, locationObject, outBreakCounterValue, o
 };
 
 
-const discardPlayerCards = async (playerId, roomId, cards) => {
+const discardPlayerCards = async (playerId, roomId, cardId) => {
     try {
         const room = doc(db, "rooms", roomId);
         const roomInfo = await getDoc(room);
@@ -251,10 +251,10 @@ const discardPlayerCards = async (playerId, roomId, cards) => {
         }
         const roomData = roomInfo.data();
         const playerHand = roomData.players[playerId].hand;
-        if (cards.length > 2) {
+        if (cardId.length > 2) {
             throw new Error("Cannot discard more than 2 cards");
         }
-        if (cards.length < 1) {
+        if (cardId.length < 1) {
             throw new Error("Must discard at least 1 card");
         }
         if (playerHand.some((card) => card === "epidemic")) {
@@ -263,12 +263,12 @@ const discardPlayerCards = async (playerId, roomId, cards) => {
         if (playerHand.length < 8) {
             throw new Error("Player does not have enough cards to discard");
         }
-        if (cards.some((card) => !playerHand.includes(card))) {
+        if (cardId.some((card) => !playerHand.includes(card))) {
             throw new Error("Player does not have one or more of the cards to discard");
         }
         // console.log(playerHand);
         // console.log(cards);
-        const newHand = playerHand.filter((card) => !cards.includes(card));
+        const newHand = playerHand.filter((card) => !cardId.includes(card));
         // console.log(newHand);
         await updateDoc(room, {
             [`players.${playerId}.hand`]: newHand,

@@ -275,7 +275,7 @@ const discardCard = async () => {
     const response = await fetch(`http://localhost:3000/discard-card`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ playerId, roomId, cardId: selectedCard.id }),
+        body: JSON.stringify({ playerId, roomId, cardId: [selectedCard.id] }),
     });
     const data = await response.json()
     if (!response.ok) throw new Error(data.error)

@@ -95,7 +95,7 @@ const Hand = ({ roomId, playerName, onClick, selectedCardId, selectedLocation })
             cardStyle = {};
         }
         return (
-            <div key={card.id} className={`card rounded-lg overflow-hidden ${isSelected ? "selected" : ""}`} onClick={() => handleCardClick(card)} style={cardStyle}>
+            <div key={card.id} className={`card rounded-lg overflow-hidden ${isSelected ? "selected" : ""}`} onClick={() => onClick(card)} style={cardStyle}>
                 <img src={imagePath} alt={card.location} className="w-full h-full object-cover" />
             </div>
         );
