@@ -504,6 +504,10 @@ const Board = () => {
                         <text x="40" y="540" fill="black" fontSize="20">
                             Outbreaks: {outbreaks}
                         </text>
+                        <text x="40" y="500" fill="black" fontSize="20">
+                          Your Actions Remaining: {roomData.players[getPlayerId(roomData.players)].actionsRemaining}
+                        </text>
+
                         <text x="610" y="540" fill={roomData.players[currentTurn].pawnColor} fontSize="20">
                             Player {roomData.players[currentTurn].name}'s Turn
                         </text>
