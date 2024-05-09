@@ -74,7 +74,7 @@ const endTurn = async (playerId, roomId) => {
             // console.log("Disease cubes")
             // console.log(locationObject[cardData.location].diseaseCubes)
             if (roomData.eradicationMarkers[color] === false) {
-                if ((locationObject[location].diseaseCubes[color] == 3)) {
+                if (locationObject[location].diseaseCubes[color] == 3) {
                     console.log("outbreak occurred");
                     [locationObject, outBreakCounterValue] = await Outbreak(location, color, locationObject, outBreakCounterValue);
                     // console.log(locationObject);
@@ -128,7 +128,7 @@ const drawPlayerCards = async (playerId, roomId) => {
             [`players.${playerId}.hand`]: playerCards,
             playerDeck: playerDeck,
             [`players.${playerId}.drewCards`]: true,
-            [`players.${playerId}.actionsRemaining`]: 0
+            [`players.${playerId}.actionsRemaining`]: 0,
         });
     } catch (error) {
         throw new Error("Error Drawing Player Cards: " + error.message);
@@ -185,7 +185,9 @@ const resolveEpidemic = async (playerId, roomId) => {
             let totalCubes = Object.values(locationObject).reduce((total, location) => total + location.diseaseCubes[color], 0);
             if (totalCubes >= 24) {
                 await endGame(roomId, "Lost");
-                throw new Error("Game Lost: Too many disease cubes of one color");
+            }
+            if (outBreakCounterValue >= 8) {
+                await endGame(roomId, "Lost");
             }
             // console.log(locationDisease);
             await updateDoc(room, {
@@ -211,13 +213,9 @@ const Outbreak = async (location, color, locationObject, outBreakCounterValue, o
     try {
         if (outbreakChain.has(location)) {
             return [locationObject, outBreakCounterValue];
-        }   
+        }
         outbreakChain.add(location);
         outBreakCounterValue += 1;
-        if (outBreakCounterValue >= 8) {
-            await endGame(roomId, "Lost");
-            throw new Error("Game Lost: Too many outbreaks");
-        }
         const adjacentLocations = locationObject[location].adjacent;
         for (const adjacentLocation of adjacentLocations) {
             if (outbreakChain.has(adjacentLocation)) {
@@ -226,7 +224,7 @@ const Outbreak = async (location, color, locationObject, outBreakCounterValue, o
                 if (locationObject[adjacentLocation].diseaseCubes[color] < 3) {
                     locationObject[adjacentLocation].diseaseCubes[color] += 1;
                     if (locationObject[adjacentLocation].diseaseCubes[color] >= 3) {
-                        [locationObject, outBreakCounterValue] = await Outbreak(adjacentLocation, color, {...locationObject}, outBreakCounterValue, new Set([...outbreakChain]));
+                        continue;
                     }
                 }
             }
@@ -236,8 +234,6 @@ const Outbreak = async (location, color, locationObject, outBreakCounterValue, o
         throw new Error("Error Outbreaking: " + error.message);
     }
 };
-
-
 
 const discardPlayerCards = async (playerId, roomId, cardId) => {
     try {
@@ -471,7 +467,7 @@ const actionShareKnowledge = async (playerId1, roomId, playerId2, cardId) => {
 
         let cardIndex = getCardIndex(cardId, player1Hand);
         if (cardIndex === -1) {
-            cardIndex = getCardIndex(cardId, player2Hand)
+            cardIndex = getCardIndex(cardId, player2Hand);
             giver = playerId2;
             receiver = playerId1;
         } else {
@@ -480,7 +476,7 @@ const actionShareKnowledge = async (playerId1, roomId, playerId2, cardId) => {
         }
 
         if (cardIndex === -1) {
-            throw new Error(`Neither player has that card!`)
+            throw new Error(`Neither player has that card!`);
         }
 
         const giverHand = roomData.players[giver].hand;
@@ -550,7 +546,7 @@ const actionDiscoverCure = async (playerId, roomId, cardIds) => {
             }
 
             if (!newHand.includes(cardId)) {
-                throw new Error(`Card (id=${cardId}) not found in player's hand!`)
+                throw new Error(`Card (id=${cardId}) not found in player's hand!`);
             }
 
             newHand = newHand.toSpliced(newHand.indexOf(cardId), 1);
@@ -677,6 +673,6 @@ const getPossibleCures = async (roomId, playerId) => {
 
 const getCardIndex = (cardId, playerHand) => {
     return playerHand.findIndex((card) => card === cardId);
-}
+};
 
 export { checkPlayer, endTurn, takeAction, drawPlayerCards, discardPlayerCards, resolveEpidemic, getDiseaseColors, getLegalActions };

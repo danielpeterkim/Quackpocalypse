@@ -335,7 +335,7 @@ const Board = () => {
 
     const discoverCure = () => {
         if (cureCards.length === 5) {
-            takeAction({ action: "cure", cardIndices: cureCards });
+            takeAction({ action: "cure", cardIds: cureCards });
             setCureCards([]);
         } else {
             alert("Please click on five of your cards in order before discovering a cure.");
@@ -501,6 +501,22 @@ const Board = () => {
                                 selectedLocation={location}
                             />
                         ))}
+                        {roomData.cureMarkers["blue"] && 
+                        <text x="40" y="60" fill="blue" fontSize="20">
+                            Blue cure found!
+                        </text>}
+                        {roomData.cureMarkers["green"] &&
+                        <text x="220" y="60" fill="green" fontSize="20">
+                            Green cure found!
+                        </text>}
+                        {roomData.cureMarkers["purple"] &&
+                        <text x="400" y="60" fill="purple" fontSize="20">
+                            Purple cure found!
+                        </text>}
+                        {roomData.cureMarkers["red"] && 
+                        <text x="580" y="60" fill="red" fontSize="20">
+                            Red cure found!
+                        </text>}
                         <text x="40" y="540" fill="black" fontSize="20">
                             Outbreaks: {outbreaks}
                         </text>
@@ -554,7 +570,6 @@ const Board = () => {
 
                     {selectedPlayer && (
                         <div>
-                            <h2>{selectedPlayer}'s Hand</h2>
                             {showHand(selectedPlayer)}
                         </div>
                     )}
