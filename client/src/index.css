@@ -9,7 +9,7 @@ html, body {
 }
 
 input, select, textarea{
-  color: #ff0000;
+  color: black;
 }
 .hand-container {
   display: flex;

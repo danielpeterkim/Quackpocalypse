@@ -148,6 +148,10 @@ router.post("/take-action", verifyToken, async (req, res) => {
 router.get("/get-card", async (req, res) => {
     const { deckType, cardId } = req.query;
     try {
+        if (cardId === "epidemic") {
+            res.json({ name: "Epidemic" });
+            return;
+        }
         const card = await getCard(deckType, parseInt(cardId));
         if (card) {
             res.json(card);
@@ -201,9 +205,9 @@ router.post("/end-turn", verifyToken, async (req, res) => {
     }
 });
 
-router.post("/discard-cards", verifyToken, async (req, res) => {
-    const { playerId, roomId, cards } = req.body;
-    if (!playerId || !roomId || !cards) {
+router.post("/discard-card", verifyToken, async (req, res) => {
+    const { playerId, roomId, cardId } = req.body;
+    if (!playerId || !roomId || !cardId) {
         return res.status(400).json({ error: "Missing required fields" });
     }
     if (!req.token) {
@@ -216,7 +220,7 @@ router.post("/discard-cards", verifyToken, async (req, res) => {
         return res.status(403).json({ error: "Access Denied" });
     }
     try {
-        await discardPlayerCards(playerId, roomId, cards);
+        await discardPlayerCards(playerId, roomId, cardId);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }

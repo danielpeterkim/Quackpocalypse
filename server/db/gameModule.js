@@ -22,9 +22,9 @@ const checkPlayer = async (playerId, roomId) => {
         // if (roomData.turnOrder[0] !== playerId) {
         //     throw new Error("Not player's turn");
         // }
-        if (roomData.players[playerId].actionsRemaining < 1) {
-            throw new Error("No actions left");
-        }
+        // if (roomData.players[playerId].actionsRemaining < 1) {
+        //     throw new Error("No actions left");
+        // }
         return roomData;
     } catch (error) {
         throw new Error(error.message);
@@ -33,6 +33,7 @@ const checkPlayer = async (playerId, roomId) => {
 
 const endTurn = async (playerId, roomId) => {
     try {
+        await resolveEpidemic(playerId, roomId);
         const room = doc(db, "rooms", roomId);
         const roomInfo = await getDoc(room);
         if (!roomInfo.exists()) {
@@ -121,15 +122,13 @@ const drawPlayerCards = async (playerId, roomId) => {
         if (roomData.players[playerId].drewCards === true) {
             throw new Error("Player has already drawn cards this turn");
         }
-        if (roomData.players[playerId].actionsRemaining != 0) {
-            throw new Error("Player still has actions left to use");
-        }
         const newPlayerCards = playerDeck.splice(0, 2);
         const playerCards = roomData.players[playerId].hand.concat(newPlayerCards);
         await updateDoc(room, {
             [`players.${playerId}.hand`]: playerCards,
             playerDeck: playerDeck,
             [`players.${playerId}.drewCards`]: true,
+            [`players.${playerId}.actionsRemaining`]: 0
         });
     } catch (error) {
         throw new Error("Error Drawing Player Cards: " + error.message);
@@ -157,7 +156,7 @@ const resolveEpidemic = async (playerId, roomId) => {
         const roomData = await checkPlayer(playerId, roomId);
         let playerHand = roomData.players[playerId].hand;
         if (!playerHand.includes("epidemic")) {
-            throw new Error("Player does not have an epidemic card to resolve");
+            return;
         }
         let infectionDeck = roomData.infectionDeck;
         let infectionDiscard = roomData.infectionDiscard;
@@ -243,7 +242,7 @@ const Outbreak = async (location, color, locationObject, outBreakCounterValue, o
 };
 
 
-const discardPlayerCards = async (playerId, roomId, cards) => {
+const discardPlayerCards = async (playerId, roomId, cardId) => {
     try {
         const room = doc(db, "rooms", roomId);
         const roomInfo = await getDoc(room);
@@ -252,10 +251,10 @@ const discardPlayerCards = async (playerId, roomId, cards) => {
         }
         const roomData = roomInfo.data();
         const playerHand = roomData.players[playerId].hand;
-        if (cards.length > 2) {
+        if (cardId.length > 2) {
             throw new Error("Cannot discard more than 2 cards");
         }
-        if (cards.length < 1) {
+        if (cardId.length < 1) {
             throw new Error("Must discard at least 1 card");
         }
         if (playerHand.some((card) => card === "epidemic")) {
@@ -264,12 +263,12 @@ const discardPlayerCards = async (playerId, roomId, cards) => {
         if (playerHand.length < 8) {
             throw new Error("Player does not have enough cards to discard");
         }
-        if (cards.some((card) => !playerHand.includes(card))) {
+        if (cardId.some((card) => !playerHand.includes(card))) {
             throw new Error("Player does not have one or more of the cards to discard");
         }
         // console.log(playerHand);
         // console.log(cards);
-        const newHand = playerHand.filter((card) => !cards.includes(card));
+        const newHand = playerHand.filter((card) => !cardId.includes(card));
         // console.log(newHand);
         await updateDoc(room, {
             [`players.${playerId}.hand`]: newHand,
