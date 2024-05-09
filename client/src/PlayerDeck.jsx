@@ -2,11 +2,10 @@ import React, { useState } from "react";
 import "./index.css";
 let token = localStorage.getItem("token");
 
-const PlayerDeck = ({ playerId, roomId, setSuccess, setError }) => {
+const PlayerDeck = ({ playerId, roomId }) => {
     const [loading, setLoading] = useState(false);
     const drawCards = async () => {
         setLoading(true);
-        setError("");
         try {
             const response = await fetch("http://localhost:3000/draw-card", {
                 method: "POST",

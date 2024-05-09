@@ -532,7 +532,7 @@ const discardCard = async () => {
                         </button>
                         {/* Should be in a seperate button but here for now */}
                         <button onClick={endTurn} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                            End Turn
+                            End Turn and Resolve Epidemic
                         </button>
                     </div>
 
