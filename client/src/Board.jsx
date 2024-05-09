@@ -306,7 +306,7 @@ const discardCard = async () => {
 
     const chooseCard = (action) => {
         if (selectedCard) {
-            takeAction({ action: action, index: selectedCard.id });
+            takeAction({ action: action, cardId: selectedCard.id });
             setSelectedCard(null);
         } else {
             alert("Please choose a card in your deck before flying.");
