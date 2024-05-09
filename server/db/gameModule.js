@@ -213,7 +213,6 @@ const Outbreak = async (location, color, locationObject, outBreakCounterValue, o
             return [locationObject, outBreakCounterValue];
         }   
         outbreakChain.add(location);
-        // console.log(outbreakChain);
         outBreakCounterValue += 1;
         if (outBreakCounterValue >= 8) {
             await endGame(roomId, "Lost");
@@ -226,20 +225,18 @@ const Outbreak = async (location, color, locationObject, outBreakCounterValue, o
             } else {
                 if (locationObject[adjacentLocation].diseaseCubes[color] < 3) {
                     locationObject[adjacentLocation].diseaseCubes[color] += 1;
-                    // console.log(locationObject[adjacentLocation].diseaseCubes[color]);
-                if (!outbreakChain.has(adjacentLocation) && locationObject[adjacentLocation].diseaseCubes[color] >= 3) {
-                    [locationObject, outBreakCounterValue] = await Outbreak(adjacentLocation, color, {...locationObject}, outBreakCounterValue, new Set([...outbreakChain]));
-                } else {
-                    locationObject = await Outbreak(adjacentLocation, color, locationObject, outbreakChain);
-                    locationObject[adjacentLocation].diseaseCubes[color] = Math.min(locationObject[adjacentLocation].diseaseCubes[color] + 1, 3);
+                    if (locationObject[adjacentLocation].diseaseCubes[color] >= 3) {
+                        [locationObject, outBreakCounterValue] = await Outbreak(adjacentLocation, color, {...locationObject}, outBreakCounterValue, new Set([...outbreakChain]));
+                    }
                 }
             }
-        }}
+        }
         return [locationObject, outBreakCounterValue];
     } catch (error) {
         throw new Error("Error Outbreaking: " + error.message);
     }
 };
+
 
 
 const discardPlayerCards = async (playerId, roomId, cardId) => {
