@@ -29,6 +29,8 @@ const Area = ({ x, y, width, height, color, onClick, name, roomData, cubeClick, 
         }
       }
 
+      cubes.sort()
+
       return(
       <g className="cursor-pointer" onClick={() => onClick(name)}>
         <rect x={x} y={y} width={width} height={height} fill="transparent" stroke={color} strokeWidth="2" />
