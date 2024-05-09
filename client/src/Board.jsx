@@ -28,7 +28,7 @@ const Board = () => {
     const [dataChannel, setDataChannel] = useState(null);
     const { roomId } = useParams();
     const { name } = useParams();
-    const refreshInterval = 5000;
+    const refreshInterval = 1000;
     let token = localStorage.getItem("token");
     const [gameStatus, setGameStatus] = useState("");
 
@@ -183,8 +183,8 @@ const Board = () => {
 
         if (roomId) {
             handleGetRoomData();
-            // const intervalId = setInterval(handleGetRoomData, refreshInterval);
-            // return () => clearInterval(intervalId);
+            const intervalId = setInterval(handleGetRoomData, refreshInterval);
+            return () => clearInterval(intervalId);
         }
     }, []);
 
