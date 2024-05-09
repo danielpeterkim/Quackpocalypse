@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { io } from "socket.io-client";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import PlayerDeck from "./PlayerDeck";
 import Area from "./Area";
 import Hand from "./Hand";
@@ -15,7 +15,7 @@ const Board = () => {
     const [sharedCard, setSharedCard] = useState(null);
     const [cureCards, setCureCards] = useState([]);
     const [outbreaks, setOutbreaks] = useState(0);
-    const [currentTurn, setCurrentTurn] = useState('');
+    const [currentTurn, setCurrentTurn] = useState("");
     // const [playerTurn, setPlayerTurn] = useState(1);
     const [selectedPlayer, setSelectedPlayer] = useState(null);
     const [color, setColor] = useState("");
@@ -30,6 +30,7 @@ const Board = () => {
     const { name } = useParams();
     const refreshInterval = 5000;
     let token = localStorage.getItem("token");
+    const [gameStatus, setGameStatus] = useState("");
 
     useEffect(() => {
         const newSocket = io("http://localhost:3000");
@@ -168,6 +169,7 @@ const Board = () => {
                 if (response.ok) {
                     setRoomData(data);
                     setOutbreaks(data.outbreakCounter);
+                    setGameStatus(data.gameStatus);
                     setCurrentTurn(data.turnOrder[0]);
                     setLoading(false);
                 } else {
@@ -193,109 +195,108 @@ const Board = () => {
     };
 
     const getOtherId = (players, pln) => {
-      const matchingPlayer = Object.keys(players).find((playerId) => players[playerId].name === pln);
-      return matchingPlayer ? matchingPlayer : undefined;
-    }
+        const matchingPlayer = Object.keys(players).find((playerId) => players[playerId].name === pln);
+        return matchingPlayer ? matchingPlayer : undefined;
+    };
 
     const takeAction = async (args) => {
-      try {
-          // console.log(getPlayerId(roomData.players));
-          // console.log(roomId);          
-          setError('');
-          const playerId = getPlayerId(roomData.players);
-          if (!playerId) {
-              console.error('Player ID not found');
-              return;
-          }
-          // const playerNum = roomData.players[playerId].playerNumber;
-          // if(playerNum !== playerTurn){
-          //   throw new Error('Please wait your turn');
-          // }
-          if(playerId !== currentTurn){
-            throw new Error('Please wait your turn');
-          }
-          const response = await fetch('http://localhost:3000/take-action', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({ playerId: getPlayerId(roomData.players), roomId: roomId, args: args })
-          });
-          const data = await response.json();
-          if (response.ok) {
-              console.log('Action successfully completed');
-              // window.location.reload();
-          } else {
-              throw new Error(data.error);
-          }
-      } catch (error) {
-          console.error('Error:', error.message);
-          setError(error.message);
-      }
-  };
-
-
-  const endTurn = async () => {
-    try {
-        const response = await fetch(`http://localhost:3000/end-turn`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ playerId: getPlayerId(roomData.players), roomId }),
-        });
-        const data = await response.json();
-        if(response.ok){
-            alert('Turn ended successfully!');
-            // if(playerTurn === roomData.players.length){
-            //   setPlayerTurn(1);
-            // } else {
-            //   setPlayerTurn(playerTurn + 1);
+        try {
+            // console.log(getPlayerId(roomData.players));
+            // console.log(roomId);
+            setError("");
+            const playerId = getPlayerId(roomData.players);
+            if (!playerId) {
+                console.error("Player ID not found");
+                return;
+            }
+            // const playerNum = roomData.players[playerId].playerNumber;
+            // if(playerNum !== playerTurn){
+            //   throw new Error('Please wait your turn');
             // }
-        } else {
-            throw new Error(data.error);
+            if (playerId !== currentTurn) {
+                throw new Error("Please wait your turn");
+            }
+            const response = await fetch("http://localhost:3000/take-action", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ playerId: getPlayerId(roomData.players), roomId: roomId, args: args }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                console.log("Action successfully completed");
+                // window.location.reload();
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (error) {
+            console.error("Error:", error.message);
+            setError(error.message);
         }
-    } catch (error) {
-        console.error('Error:', error.message);
-        setError(error.message);
-    }
-};
-const discardCard = async () => {
-  if (!selectedCard) {
-    alert('Please select a card to discard.');
-    return;
-  }
+    };
 
-  const playerId = getPlayerId(roomData.players);
-  if (!playerId) {
-    alert('Player ID not found');
-    return;
-  }
+    const endTurn = async () => {
+        try {
+            const response = await fetch(`http://localhost:3000/end-turn`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ playerId: getPlayerId(roomData.players), roomId }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                alert("Turn ended successfully!");
+                // if(playerTurn === roomData.players.length){
+                //   setPlayerTurn(1);
+                // } else {
+                //   setPlayerTurn(playerTurn + 1);
+                // }
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (error) {
+            console.error("Error:", error.message);
+            setError(error.message);
+        }
+    };
+    const discardCard = async () => {
+        if (!selectedCard) {
+            alert("Please select a card to discard.");
+            return;
+        }
 
-  try {
-    const response = await fetch(`http://localhost:3000/discard-card`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ playerId, roomId, cardId: [selectedCard.id] }),
-    });
-    const data = await response.json()
-    if (!response.ok) throw new Error(data.error)
-    alert('Card discarded successfully!')
-    setSelectedCard(null);  
-  } catch (error) {
-    console.error('Error discarding card:', error);
-    setError(error.message);
-  }
-}
+        const playerId = getPlayerId(roomData.players);
+        if (!playerId) {
+            alert("Player ID not found");
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:3000/discard-card`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ playerId, roomId, cardId: [selectedCard.id] }),
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error);
+            alert("Card discarded successfully!");
+            setSelectedCard(null);
+        } catch (error) {
+            console.error("Error discarding card:", error);
+            setError(error.message);
+        }
+    };
 
     const chooseLoc = (action) => {
-      if(action === "charterFlight"){
-        if(!selectedCard){
-          alert('select a card to discard');
+        if (action === "charterFlight") {
+            if (!selectedCard) {
+                alert("select a card to discard");
+            }
+            if (selectedCard.location !== roomData.players[getPlayerId(roomData.players)].location) {
+                alert("You must be in the location of the card you want to use");
+            }
         }
-        if(selectedCard.location !== roomData.players[getPlayerId(roomData.players)].location){
-          alert("You must be in the location of the card you want to use");
-        } 
-      }
         if (location) {
             takeAction({ action: action, location: location });
             setLocation("");
@@ -323,23 +324,23 @@ const discardCard = async () => {
     };
 
     const shareKnowledge = () => {
-      if(sharedCard && sharedPlayer){
-        takeAction({action: "share", playerId: getOtherId(roomData.players, sharedPlayer), cardId: sharedCard.id});
-        setSharedCard(null);
-        setSharedPlayer(null);
-      } else { 
-        alert("Please click a player's hand who you want to trade with and a card to take or give. ");
-      }
-    }
+        if (sharedCard && sharedPlayer) {
+            takeAction({ action: "share", playerId: getOtherId(roomData.players, sharedPlayer), cardId: sharedCard.id });
+            setSharedCard(null);
+            setSharedPlayer(null);
+        } else {
+            alert("Please click a player's hand who you want to trade with and a card to take or give. ");
+        }
+    };
 
     const discoverCure = () => {
-      if(cureCards.length === 5){
-        takeAction({ action: "cure", cardIndices: cureCards });
-        setCureCards([]);
-      } else {
-        alert("Please click on five of your cards in order before discovering a cure.");
-      }
-    }
+        if (cureCards.length === 5) {
+            takeAction({ action: "cure", cardIndices: cureCards });
+            setCureCards([]);
+        } else {
+            alert("Please click on five of your cards in order before discovering a cure.");
+        }
+    };
 
     const handleToggleChat = () => {
         if (roomData.players && Object.keys(roomData.players).length > 2) {
@@ -353,9 +354,9 @@ const discardCard = async () => {
     const handleAreaClick = (areaName) => {
         // move pawn to that area
         if (location === areaName) {
-          setLocation("")
+            setLocation("");
         } else {
-          setLocation(areaName);
+            setLocation(areaName);
         }
     };
 
@@ -364,29 +365,42 @@ const discardCard = async () => {
     };
 
     const handleCardClick = (card) => {
-      if (selectedCard === card) {
-        setSelectedCard(null);
-        setSharedCard(null);
-      } else {
-        setSelectedCard(card);
-        setSharedCard(card);
-        setCureCards([...cureCards, card.id]); 
-    };
-        
+        if (selectedCard === card) {
+            setSelectedCard(null);
+            setSharedCard(null);
+        } else {
+            setSelectedCard(card);
+            setSharedCard(card);
+            setCureCards([...cureCards, card.id]);
+        }
     };
 
     const handleOtherClick = (card) => {
-      if (sharedCard === card) {
-        setSharedCard(null);
-      } else {
-        setSharedCard(card);
-      }
-      
-    }
-
+        if (sharedCard === card) {
+            setSharedCard(null);
+        } else {
+            setSharedCard(card);
+        }
+    };
 
     if (loading) {
         return <h1>Loading...</h1>;
+    }
+
+    if (gameStatus === "Won") {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen">
+                <h1 className="text-4xl font-bold text-green-600 mb-4">You Won!</h1>
+            </div>
+        );
+    }
+
+    if (gameStatus === "Lost") {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen">
+                <h1 className="text-4xl font-bold text-red-600 mb-4">You Lost!</h1>
+            </div>
+        );
     }
 
     const areas = [
@@ -447,22 +461,17 @@ const discardCard = async () => {
     };
 
     const showHand = (playerName) => {
-        return <Hand 
-        roomId={roomId} 
-        playerName={playerName} 
-        onClick={handleOtherClick} 
-        selectedLocation = {location}
-        selectedCardId={sharedCard}/>;
+        return <Hand roomId={roomId} playerName={playerName} onClick={handleOtherClick} selectedLocation={location} selectedCardId={sharedCard} />;
     };
 
     const handlePlayerHandClick = (playerName) => {
         if (selectedPlayer === playerName) {
-          setSelectedPlayer(null);
-          setSharedPlayer(null);
-          setSharedCard(null);
+            setSelectedPlayer(null);
+            setSharedPlayer(null);
+            setSharedCard(null);
         } else {
-          setSelectedPlayer(playerName);
-          setSharedPlayer(playerName);
+            setSelectedPlayer(playerName);
+            setSharedPlayer(playerName);
         }
     };
     // const handleActionClick = (btn, actionName) => {
@@ -470,34 +479,40 @@ const discardCard = async () => {
     // }
 
     return (
-      // Using Tailwind classes to control maximum size and responsiveness
-      <div className="main-content">
-      <div className="min-h-screen bg-gray-800 flex justify-center items-center">
-      <div className="w-full h-full max-w-4xl max-h-3xl mx-auto">
-      {error && <p className="text-red-600">{error}</p>}
-      <svg className="w-full h-full" viewBox="0 0 800 600">
-            <image href={('/0.png')} width="800" height="600"/>
-            {areas.map(area => (
-              <Area
-                key={area.name}
-                x={area.x}
-                y={area.y}
-                width={35}
-                height={25}
-                color={area.color}
-                onClick={handleAreaClick}
-                name={area.name}
-                roomData={roomData}
-                cubeClick={handleCubeClick}
-                selectedLocation={location}
-              />
-            ))}
-         <text x="40" y="540" fill="black" fontSize="20">Outbreaks: {outbreaks}</text>
-         <text x="610" y="540" fill={roomData.players[currentTurn].pawnColor} fontSize="20">
-         Player {roomData.players[currentTurn].name}'s Turn
-         </text>
-         {/* <text x="610" y="540" fill="black" fontSize="20">Player {playerTurn}'s Turn</text> */}
-          </svg>
+        // Using Tailwind classes to control maximum size and responsiveness
+        <div className="main-content">
+            <div className="min-h-screen bg-gray-800 flex justify-center items-center">
+                <div className="w-full h-full max-w-4xl max-h-3xl mx-auto">
+                    {error && <p className="text-red-600">{error}</p>}
+                    <svg className="w-full h-full" viewBox="0 0 800 600">
+                        <image href={"/0.png"} width="800" height="600" />
+                        {areas.map((area) => (
+                            <Area
+                                key={area.name}
+                                x={area.x}
+                                y={area.y}
+                                width={35}
+                                height={25}
+                                color={area.color}
+                                onClick={handleAreaClick}
+                                name={area.name}
+                                roomData={roomData}
+                                cubeClick={handleCubeClick}
+                                selectedLocation={location}
+                            />
+                        ))}
+                        <text x="40" y="540" fill="black" fontSize="20">
+                            Outbreaks: {outbreaks}
+                        </text>
+                        <text x="40" y="500" fill="black" fontSize="20">
+                          Your Actions Remaining: {roomData.players[getPlayerId(roomData.players)].actionsRemaining}
+                        </text>
+
+                        <text x="610" y="540" fill={roomData.players[currentTurn].pawnColor} fontSize="20">
+                            Player {roomData.players[currentTurn].name}'s Turn
+                        </text>
+                        {/* <text x="610" y="540" fill="black" fontSize="20">Player {playerTurn}'s Turn</text> */}
+                    </svg>
 
                     <div className="inline-flex rounded-md shadow-sm" role="group">
                         <button onClick={() => chooseLoc("drive")} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
@@ -518,16 +533,10 @@ const discardCard = async () => {
                         <button onClick={() => chooseLocColor()} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                             Treat
                         </button>
-                        <button
-                            onClick={() => shareKnowledge()}
-                            className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                        >
+                        <button onClick={() => shareKnowledge()} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                             Share Knowledge
                         </button>
-                        <button
-                            onClick={() => discoverCure()}
-                            className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                        >
+                        <button onClick={() => discoverCure()} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                             Discover a Cure
                         </button>
                         {/* Should be in a seperate button but here for now */}
@@ -536,31 +545,33 @@ const discardCard = async () => {
                         </button>
                     </div>
 
-                    <button onClick={discardCard} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Discard</button>
+                    <button onClick={discardCard} className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Discard
+                    </button>
 
-                    <Hand roomId={roomId} playerName={name} onClick={handleCardClick} selectedCardId={selectedCard} selectedLocation={location}/>
-                    <PlayerDeck roomId={roomId} playerId={getPlayerId(roomData.players)}/>
+                    <Hand roomId={roomId} playerName={name} onClick={handleCardClick} selectedCardId={selectedCard} selectedLocation={location} />
+                    <PlayerDeck roomId={roomId} playerId={getPlayerId(roomData.players)} />
 
-      {selectedPlayer && (
-          <div>
-              <h2>{selectedPlayer}'s Hand</h2>
-              {showHand(selectedPlayer)}
-          </div>
-      )}
-      <div className="player-hands">
-          {Object.values(roomData.players).map((player) => (
-              player.name !== name && (
-                  <button
-                      key={player.name}
-                      onClick={() => handlePlayerHandClick(player.name)}
-                      className="cursor-pointer bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-xs"
-                  >
-                      {player.name}'s Hand
-                  </button>
-              )
-          ))}
-      </div>
-
+                    {selectedPlayer && (
+                        <div>
+                            <h2>{selectedPlayer}'s Hand</h2>
+                            {showHand(selectedPlayer)}
+                        </div>
+                    )}
+                    <div className="player-hands">
+                        {Object.values(roomData.players).map(
+                            (player) =>
+                                player.name !== name && (
+                                    <button
+                                        key={player.name}
+                                        onClick={() => handlePlayerHandClick(player.name)}
+                                        className="cursor-pointer bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-xs"
+                                    >
+                                        {player.name}'s Hand
+                                    </button>
+                                )
+                        )}
+                    </div>
                 </div>
                 {showChatButton && (
                     <button

@@ -171,7 +171,7 @@ const resolveEpidemic = async (playerId, roomId) => {
         // console.log(card);
         const location = card.location;
         const color = card.color;
-        playerHand = playerHand.filter((card) => card !== "epidemic");
+        playerHand = playerHand.filter((item) => item !== "epidemic");
         if (roomData.eradicationMarkers[color] === false) {
             let locationObject = roomData.locations;
             if (locationObject[location].diseaseCubes[color] == 3) {
@@ -371,10 +371,11 @@ const actionShuttleFlight = async (playerId, roomId, newLocation) => {
         const room = doc(db, "rooms", roomId);
         const roomData = await checkPlayer(playerId, roomId);
         const playerData = roomData.players[playerId];
-        const playerLocationObject = roomData[playerData.location];
-        const newLocationObject = roomData[playerData.location];
+        const playerLocation = playerData.location;
+        const playerLocationObject = roomData.locations[playerLocation];
+        const newLocationObject = roomData.locations[newLocation];
 
-        if (newLocation === playerData.location) throw new Error("You are already there!");
+        if (newLocation === roomData.players[playerId].location) throw new Error("You are already there!");
         if (!playerLocationObject.researchStation) throw new Error("There is no research station in your location!");
         if (!newLocationObject.researchStation) throw new Error("There is no research station in that location!");
 

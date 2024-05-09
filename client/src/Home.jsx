@@ -32,6 +32,7 @@ function Home() {
 
     const handleCreateRoom = async () => {
         try {
+            let hiddenHands = false;
             const response = await fetch("http://localhost:3000/create-room", {
                 method: "POST",
                 headers: {
@@ -110,12 +111,12 @@ function Home() {
                             <label>Name:</label>
                             <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
                             {"  "}
-                            <label>Hidden hands:</label>
+                            {/* <label>Hidden hands:</label>
                             <select value={hiddenHands} onChange={(e) => setHiddenHands(e.target.value)} className="bg-gray-800 text-white px-4 py-2 rounded-lg text-lg">
                                 <option value={false}>No</option>
                                 <option value={true}>Yes</option>
                             </select>
-                            {"  "}
+                            {"  "} */}
                             <label>Epidemic cards:</label>
                             <select value={epidemicCards} onChange={(e) => setEpidemicCards(e.target.value)} className="bg-gray-800 text-white px-4 py-2 rounded-lg text-lg">
                                 <option value={4}>4</option>
