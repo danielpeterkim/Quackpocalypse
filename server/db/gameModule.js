@@ -171,7 +171,7 @@ const resolveEpidemic = async (playerId, roomId) => {
         // console.log(card);
         const location = card.location;
         const color = card.color;
-        playerHand = playerHand.filter((card) => card !== "epidemic");
+        playerHand = playerHand.filter((item) => item !== "epidemic");
         if (roomData.eradicationMarkers[color] === false) {
             let locationObject = roomData.locations;
             if (locationObject[location].diseaseCubes[color] == 3) {
