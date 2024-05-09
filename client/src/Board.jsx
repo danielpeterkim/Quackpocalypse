@@ -570,7 +570,6 @@ const Board = () => {
 
                     {selectedPlayer && (
                         <div>
-                            <h2>{selectedPlayer}'s Hand</h2>
                             {showHand(selectedPlayer)}
                         </div>
                     )}
