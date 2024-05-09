@@ -121,15 +121,13 @@ const drawPlayerCards = async (playerId, roomId) => {
         if (roomData.players[playerId].drewCards === true) {
             throw new Error("Player has already drawn cards this turn");
         }
-        if (roomData.players[playerId].actionsRemaining != 0) {
-            throw new Error("Player still has actions left to use");
-        }
         const newPlayerCards = playerDeck.splice(0, 2);
         const playerCards = roomData.players[playerId].hand.concat(newPlayerCards);
         await updateDoc(room, {
             [`players.${playerId}.hand`]: playerCards,
             playerDeck: playerDeck,
             [`players.${playerId}.drewCards`]: true,
+            [`players.${playerId}.actionsRemaining`]: 0
         });
     } catch (error) {
         throw new Error("Error Drawing Player Cards: " + error.message);
