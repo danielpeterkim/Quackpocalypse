@@ -52,8 +52,8 @@ function Lobby() {
 
         if (roomId) {
             handleGetRoomData();
-            // const intervalId = setInterval(handleGetRoomData, refreshInterval);
-            // return () => clearInterval(intervalId);
+            const intervalId = setInterval(handleGetRoomData, refreshInterval);
+            return () => clearInterval(intervalId);
         }
     }, []);
 

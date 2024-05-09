@@ -8,7 +8,7 @@ const Hand = ({ roomId, playerName, onClick, selectedCardId, selectedLocation })
     const [playerHand, setPlayerHand] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedCard, setSelectedCard] = useState(null);
-    let refreshInterval = 5000;
+    let refreshInterval = 1000;
 
     useEffect(() => {
         const fetchRoomData = async () => {
@@ -38,8 +38,8 @@ const Hand = ({ roomId, playerName, onClick, selectedCardId, selectedLocation })
 
         if (roomId) {
             fetchRoomData();
-            // const intervalId = setInterval(fetchRoomData, refreshInterval);
-            // return () => clearInterval(intervalId);
+            const intervalId = setInterval(fetchRoomData, refreshInterval);
+            return () => clearInterval(intervalId);
         }
     }, [roomId]);
 
