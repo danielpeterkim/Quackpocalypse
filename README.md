@@ -17,11 +17,11 @@ For rules and features, please look at the inspiration Pandemic the boardgame. h
 
 
 For this project, we used:
-React
-Tailwind CSS 
-Firebase
-Vercel
-WebRTC
+* React
+* Tailwind CSS 
+* Firebase
+* Vercel
+* WebRTC
 
 Vercel link: https://quack111.vercel.app/
 
