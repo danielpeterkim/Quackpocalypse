@@ -370,7 +370,7 @@ const discardCard = async () => {
       } else {
         setSelectedCard(card);
         setSharedCard(card);
-        setCureCards(cureCards.push(card.id));
+        setCureCards([...cureCards, card.id]); 
     };
         
     };
